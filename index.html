@@ -219,7 +219,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.4</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.5</div>
   </header>
 
   <main id="mainContent">
@@ -264,7 +264,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v2.4 erkennt Betrag, Datum & Firma.<br>✨ NEU: Datum wie "12. Mai 2026" wird erkannt.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v2.5 erkennt Betrag, Datum & Firma.<br>✨ NEU: Datums-Fix - "12. Mai 2026" wird jetzt zuverlässig erkannt.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -343,8 +343,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v2.4 - NEU</h3>
-          <p class="hint">✅ Datum im Format "12. Mai 2026" wird erkannt<br>✅ Alle deutschen Monate (Januar bis Dezember)<br>✅ Abkürzungen (Jan, Feb, Mär, ...)</p>
+          <h3>🎯 OCR v2.5 - Datums-Fix</h3>
+          <p class="hint">✅ "12. Mai 2026" wird jetzt erkannt (matchAll statt match)<br>✅ Alle deutschen Monate + Abkürzungen<br>✅ Auch "Mai 12, 2026" (US-Format)</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -356,7 +356,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.4 · OCR v2.4</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.5 · OCR v2.5</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -668,12 +668,10 @@ function extractCompany(t){
   return'';
 }
 
-// ========== NEUE DATUMSERKENNUNG v2.4 ==========
-// Erkennt: 12.05.2026, 12/05/2026, 12-05-2026, 2026-05-12, "12. Mai 2026", "12 Mai 2026", "Mai 12, 2026"
+// ========== DATUMSERKENNUNG v2.5 (MATCHALL FIX) ==========
 function extractDate(t){
   if(!t)return'';
   
-  // Deutsche Monatsnamen (auch abgekürzt)
   const monate={
     'januar':'01','jan':'01','jänner':'01','jaen':'01',
     'februar':'02','feb':'02','feber':'02',
@@ -689,9 +687,9 @@ function extractDate(t){
     'dezember':'12','dez':'12','dec':'12'
   };
   
-  // 1. "12. Mai 2026" oder "12 Mai 2026" oder "12.Mai 2026"
-  const m1=t.match(/(\d{1,2})\.?\s+([A-Za-zäöüß]{3,10})\s+(\d{4})/);
-  if(m1){
+  // 1. ALLE "12. Mai 2026" Treffer durchgehen (matchAll!)
+  const matches=[...t.matchAll(/(\d{1,2})\.?\s+([A-Za-zäöüß]{3,10})\s+(\d{4})/g)];
+  for(const m1 of matches){
     const monat=monate[m1[2].toLowerCase()];
     if(monat){
       const tag=m1[1].padStart(2,'0');
@@ -702,9 +700,9 @@ function extractDate(t){
     }
   }
   
-  // 2. "Mai 12, 2026" (US-Format)
-  const m2=t.match(/([A-Za-zäöüß]{3,10})\s+(\d{1,2}),?\s+(\d{4})/);
-  if(m2){
+  // 2. ALLE "Mai 12, 2026" Treffer (matchAll!)
+  const matches2=[...t.matchAll(/([A-Za-zäöüß]{3,10})\s+(\d{1,2}),?\s+(\d{4})/g)];
+  for(const m2 of matches2){
     const monat=monate[m2[1].toLowerCase()];
     if(monat){
       const tag=m2[2].padStart(2,'0');
@@ -898,7 +896,7 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v2.4 geladen!');
+  console.log('📁 Archiv App mit OCR v2.5 geladen!');
 }
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>console.log('✅ SW aktiv')).catch(e=>console.warn('SW:',e))}
