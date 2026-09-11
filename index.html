@@ -219,7 +219,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.3</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.4</div>
   </header>
 
   <main id="mainContent">
@@ -264,7 +264,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v2.3 erkennt Betrag, Datum & Firma.<br>✨ Bessere PDF-Extraktion + Firmenerkennung.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v2.4 erkennt Betrag, Datum & Firma.<br>✨ NEU: Datum wie "12. Mai 2026" wird erkannt.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -343,8 +343,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v2.3 - Fix</h3>
-          <p class="hint">✅ PDF-Extraktion zurück zur funktionierenden Version<br>✅ Firmenerkennung mit Stopp-Wörtern<br>✅ "Von ..." funktioniert auch in einer Zeile</p>
+          <h3>🎯 OCR v2.4 - NEU</h3>
+          <p class="hint">✅ Datum im Format "12. Mai 2026" wird erkannt<br>✅ Alle deutschen Monate (Januar bis Dezember)<br>✅ Abkürzungen (Jan, Feb, Mär, ...)</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -356,7 +356,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.3 · OCR v2.3</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.4 · OCR v2.4</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -608,7 +608,6 @@ async function performOCR(b64){
   }catch(e){return''}
 }
 
-// ========== PDF-EXTRAKTION (ZURÜCK ZUR FUNKTIONIERENDEN VERSION) ==========
 async function extractTextFromPDF(b64){
   try{
     const l=window.pdfjsLib;if(!l)return'';
@@ -619,7 +618,7 @@ async function extractTextFromPDF(b64){
     const pdf=await l.getDocument({data:bytes}).promise;
     let t='';
     for(let i=1;i<=pdf.numPages;i++){
-      const pg=await pdf.getPage(i);
+      const pg=await l.getPage(i);
       const c=await pg.getTextContent();
       t+=c.items.map(x=>x.str).join(' ')+'\n';
     }
@@ -627,21 +626,15 @@ async function extractTextFromPDF(b64){
   }catch(e){return''}
 }
 
-// ========== FIRMENERKENNUNG v2.3 (funktioniert auch in einer Zeile) ==========
 function extractCompany(t){
   if(!t)return'';
-  
-  // 1. Bekannte Firmen
   const companies=['Amazon','Google','Apple','Samsung','Vodafone','Telekom','Stadtwerke','Allianz','AXA','HUK','Sparkasse','Volksbank','Rewe','Aldi','Lidl','MediaMarkt','Saturn','IKEA','Zalando','Otto','eBay','PayPal','Netflix','Spotify','Microsoft','Adobe','DHL','Hermes','UPS','FedEx','Deutsche Bahn','Lufthansa','Netto','Penny','Kaufland','Edeka','Rossmann','Tchibo','Deichmann'];
   for(const c of companies)if(t.toLowerCase().includes(c.toLowerCase()))return c;
-  
-  // 2. "Von X" - funktioniert auch in einer Zeile, dank Stopp-Wörtern
   const stopper='(?:Steuer|IBAN|BIC|USt\\.|MwSt|Telefon|Tel\\.|E-Mail|@|Seite|Rechnung\\s|Datum|Kunden|Bestell|Betreff|Deutschland|Österreich|Schweiz|Herrn|Frau)';
   const patterns=[
     new RegExp('(?:^|[\\s,;])(?:Von|Absender|Rechnungssteller|Aussteller|Anbieter|Verkäufer|Lieferant)[\\s:]+([A-ZÄÖÜ][^]{2,120}?)\\s+(?='+stopper+')','i'),
     new RegExp('(?:^|[\\s,;])(?:Von|Absender|Rechnungssteller|Aussteller|Anbieter|Verkäufer|Lieferant)[\\s:]+([A-ZÄÖÜ][A-Za-zäöüßÄÖÜ\\.\\-\'&\\s]{2,80}?)(?=\\s+\\d{4,}|\\s+Straße|\\s+Str\\.|\\s+Weg|\\s+Platz|\\s+Allee|\\s+Gasse|\\s+Damm|\\s+Ring|\\s+Ufer|$)','i')
   ];
-  
   for(const p of patterns){
     const m=t.match(p);
     if(m){
@@ -653,16 +646,12 @@ function extractCompany(t){
       if(result.length>2&&result.length<80)return result;
     }
   }
-  
-  // 3. Rechtsformen (GmbH, AG, KG, ...)
   const rf=t.match(/([A-ZÄÖÜ][A-Za-zäöüßÄÖÜ\.\-']*(?:\s+[A-ZÄÖÜa-zäöüß0-9\.\-&']+){0,4})\s+(GmbH|AG|KG|OHG|UG|mbH|e\.K\.|eG|GbR|Co\.|& Co|KGaA|SE)/);
   if(rf){
     let name=(rf[1]+' '+rf[2]).trim();
     name=name.replace(/^(Herrn?|Frau|Firma|An|Von)\s+/i,'').trim();
     if(name.length>3&&name.length<60)return name;
   }
-  
-  // 4. Erste sinnvolle Zeile
   const lines=t.split('\n').map(l=>l.trim()).filter(l=>{
     if(l.length<5)return false;
     const letters=l.replace(/[^a-zA-ZäöüßÄÖÜ]/g,'').length;
@@ -679,8 +668,54 @@ function extractCompany(t){
   return'';
 }
 
+// ========== NEUE DATUMSERKENNUNG v2.4 ==========
+// Erkennt: 12.05.2026, 12/05/2026, 12-05-2026, 2026-05-12, "12. Mai 2026", "12 Mai 2026", "Mai 12, 2026"
 function extractDate(t){
   if(!t)return'';
+  
+  // Deutsche Monatsnamen (auch abgekürzt)
+  const monate={
+    'januar':'01','jan':'01','jänner':'01','jaen':'01',
+    'februar':'02','feb':'02','feber':'02',
+    'märz':'03','maerz':'03','mär':'03','maer':'03','mrz':'03','mar':'03',
+    'april':'04','apr':'04',
+    'mai':'05',
+    'juni':'06','jun':'06',
+    'juli':'07','jul':'07',
+    'august':'08','aug':'08',
+    'september':'09','sep':'09','sept':'09',
+    'oktober':'10','okt':'10','oct':'10',
+    'november':'11','nov':'11',
+    'dezember':'12','dez':'12','dec':'12'
+  };
+  
+  // 1. "12. Mai 2026" oder "12 Mai 2026" oder "12.Mai 2026"
+  const m1=t.match(/(\d{1,2})\.?\s+([A-Za-zäöüß]{3,10})\s+(\d{4})/);
+  if(m1){
+    const monat=monate[m1[2].toLowerCase()];
+    if(monat){
+      const tag=m1[1].padStart(2,'0');
+      const jahr=m1[3];
+      if(parseInt(tag)>=1&&parseInt(tag)<=31&&parseInt(jahr)>=2020&&parseInt(jahr)<=2030){
+        return tag+'.'+monat+'.'+jahr;
+      }
+    }
+  }
+  
+  // 2. "Mai 12, 2026" (US-Format)
+  const m2=t.match(/([A-Za-zäöüß]{3,10})\s+(\d{1,2}),?\s+(\d{4})/);
+  if(m2){
+    const monat=monate[m2[1].toLowerCase()];
+    if(monat){
+      const tag=m2[2].padStart(2,'0');
+      const jahr=m2[3];
+      if(parseInt(tag)>=1&&parseInt(tag)<=31&&parseInt(jahr)>=2020&&parseInt(jahr)<=2030){
+        return tag+'.'+monat+'.'+jahr;
+      }
+    }
+  }
+  
+  // 3. Numerische Formate
   const patterns=[
     /(\d{2})[\.\-/](\d{2})[\.\-/](\d{4})/,
     /(\d{2})[\.\-/](\d{2})[\.\-/](\d{2})/,
@@ -863,7 +898,7 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v2.3 geladen!');
+  console.log('📁 Archiv App mit OCR v2.4 geladen!');
 }
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>console.log('✅ SW aktiv')).catch(e=>console.warn('SW:',e))}
