@@ -12,22 +12,19 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#f5f4ee;--panel:#fff;--ink:#122033;--muted:#64748b;--line:#e4e0d5;--blue:#143a5a;--green:#1f9d68;--green2:#e7f7ef;--chip:#eef4f8;--shadow:0 18px 42px rgba(31,41,55,.14);--bottom:84px;--red:#dc2626;--orange:#f59e0b;--purple:#8b5cf6;--top-bg:linear-gradient(135deg,#143a5a,#1e5b7c);--top-text:#fff;--top-sub:#dceef7;--cloud-blue:#4285f4}
+:root{--bg:#f5f4ee;--panel:#fff;--ink:#122033;--muted:#64748b;--line:#e4e0d5;--blue:#143a5a;--green:#1f9d68;--green2:#e7f7ef;--chip:#eef4f8;--shadow:0 18px 42px rgba(31,41,55,.14);--bottom:84px;--red:#dc2626;--orange:#f59e0b;--purple:#8b5cf6;--top-bg:linear-gradient(135deg,#143a5a,#1e5b7c);--top-text:#fff;--top-sub:#dceef7}
 body.dark{--bg:#1a1a2e;--panel:#16213e;--ink:#e2e8f0;--muted:#94a3b8;--line:#2d3748;--blue:#60a5fa;--green:#34d399;--green2:#1a3a2a;--chip:#2d3748;--red:#f87171;--orange:#fbbf24;--purple:#a78bfa;--top-bg:linear-gradient(135deg,#0f172a,#1e293b);--top-text:#e2e8f0;--top-sub:#94a3b8}
 html{scroll-behavior:smooth}
 body{font-family:-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100svh;display:flex;justify-content:center;align-items:center;padding:0;transition:background .3s,color .3s}
-.phone-shell{max-width:430px;width:100%;height:100svh;min-height:700px;max-height:932px;background:var(--bg);border-radius:0;position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(15,23,42,.05),0 24px 80px rgba(15,23,42,.2);display:flex;flex-direction:column;transition:background .3s}
-@media(min-width:700px){body{padding:24px}.phone-shell{border-radius:38px;height:95svh;min-height:800px;max-height:932px}.bottom-nav{border-bottom-left-radius:38px;border-bottom-right-radius:38px}.modal-overlay{border-radius:38px}}
-@media(max-width:440px){body{padding:0}.phone-shell{border-radius:0;height:100svh;max-height:100svh;min-height:100svh}.bottom-nav{border-radius:0}.modal-overlay{border-radius:0}.stats{grid-template-columns:repeat(2,1fr)}}
-
-/* PIN */
+.phone-shell{max-width:430px;width:100%;height:100svh;min-height:700px;max-height:932px;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(15,23,42,.05),0 24px 80px rgba(15,23,42,.2);transition:background .3s}
+@media(min-width:700px){body{padding:24px}.phone-shell{border-radius:38px;height:95svh;min-height:800px}.bottom-nav,.modal-overlay{border-radius:38px}}
+@media(max-width:440px){body{padding:0}.phone-shell{border-radius:0}.bottom-nav,.modal-overlay{border-radius:0}.stats{grid-template-columns:repeat(2,1fr)}}
 .pin-overlay{position:absolute;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;justify-content:center;align-items:center;padding:40px 30px}
 .pin-overlay.show{display:flex}
 .pin-icon{font-size:64px;margin-bottom:16px}
-.pin-title{font-size:22px;font-weight:800;color:var(--ink);margin-bottom:8px}
+.pin-title{font-size:22px;font-weight:800;margin-bottom:8px}
 .pin-sub{font-size:14px;color:var(--muted);margin-bottom:24px;text-align:center}
 .pin-dots{display:flex;gap:16px;margin-bottom:24px}
 .pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:var(--panel)}
@@ -37,8 +34,6 @@ body{font-family:-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;back
 .pin-key{padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);font-size:24px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center}
 .pin-key:active{transform:scale(.94);background:var(--chip)}
 .pin-key.empty{background:transparent;border-color:transparent}
-.pin-setup-hint{font-size:12px;color:var(--muted);margin-top:16px;text-align:center}
-
 .top{background:var(--top-bg);color:var(--top-text);padding:18px 18px 22px;border-bottom-left-radius:28px;border-bottom-right-radius:28px;flex-shrink:0;position:relative;overflow:hidden}
 .top::after{content:"";position:absolute;right:-45px;top:-30px;width:150px;height:150px;border-radius:999px;background:rgba(255,255,255,.08)}
 .status{display:flex;justify-content:space-between;font-size:12px;opacity:.86;margin-bottom:14px}
@@ -47,8 +42,8 @@ body{font-family:-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;back
 h1{font-size:24px;line-height:1.05;margin:0}
 .subtitle{font-size:13px;margin:3px 0 0;color:var(--top-sub)}
 .sync-pill{margin-top:12px;display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.17);border-radius:999px;padding:6px 12px;font-size:11px;color:#e9f6fb;position:relative;z-index:2}
-.dark-toggle{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.17);border-radius:999px;padding:4px 10px;font-size:12px;color:#e9f6fb;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;margin-left:auto;flex-shrink:0}
-main{flex:1;overflow-y:auto;padding:12px 14px calc(var(--bottom) + 16px);-webkit-overflow-scrolling:touch}
+.dark-toggle{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.17);border-radius:999px;padding:4px 10px;font-size:12px;color:#e9f6fb;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;margin-left:auto}
+main{flex:1;overflow-y:auto;padding:12px 14px calc(var(--bottom)+16px);-webkit-overflow-scrolling:touch}
 .screen{display:none;animation:fade .2s ease}
 .screen.active{display:block}
 @keyframes fade{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -93,7 +88,6 @@ main{flex:1;overflow-y:auto;padding:12px 14px calc(var(--bottom) + 16px);-webkit
 .tag.email{background:#fef3c7;color:#b45309}
 .tag.indexed{background:#dbeafe;color:#1e40af}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:3px 1px 11px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
 .chip{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 14px;font-size:13px;color:var(--ink);cursor:pointer;font-family:inherit}
 .chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:15px;margin-bottom:13px}
@@ -126,7 +120,6 @@ body.dark .progress{background:#2d3748}
 .budget .sum{font-size:31px;font-weight:900;margin:8px 0}
 .budget .month-nav{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
 .budget .month-nav button{background:rgba(255,255,255,.15);border:0;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;font-family:inherit}
-.budget .month-nav span{font-size:16px;font-weight:600}
 .bar{height:10px;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden;margin:8px 0}
 .bar i{display:block;height:100%;background:#86efac;border-radius:inherit}
 .more-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -174,9 +167,6 @@ body.dark .ocr-progress{background:#2d3748}
 .modal-body .category-item .cat-name{font-weight:600}
 .modal-body .category-item .cat-amount{color:var(--blue);font-weight:700}
 .modal-body .category-item .cat-count{color:var(--muted);font-size:12px}
-.modal-body .email-meta{width:100%;text-align:left;font-size:13px;margin-bottom:12px;padding:12px;background:var(--panel);border-radius:12px;border:1px solid var(--line);color:var(--ink)}
-.modal-body .email-meta div{padding:4px 0;border-bottom:1px solid rgba(0,0,0,.05)}
-.modal-body .email-meta div:last-child{border-bottom:0}
 .dashboard-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
 .dashboard-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 10px;text-align:center}
 .dashboard-card .value{font-size:22px;font-weight:800;color:var(--ink)}
@@ -194,34 +184,22 @@ body.dark .ocr-progress{background:#2d3748}
 .install-banner .install-sub{font-size:11px;opacity:.8}
 .install-banner .install-btn{background:rgba(255,255,255,.2);border:0;color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
 .install-banner .install-close{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;opacity:.6}
-
-/* CLOUD */
-.cloud-section{padding:14px;border-radius:20px;border:2px solid var(--cloud-blue);background:linear-gradient(135deg,rgba(66,133,244,.08),rgba(66,133,244,.03));margin-bottom:13px}
-.cloud-provider-select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14px;font-family:inherit;margin-bottom:12px;cursor:pointer;font-weight:600}
-.cloud-status-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel);border-radius:12px;margin-bottom:12px;border:1px solid var(--line)}
-.cloud-status-row .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.cloud-status-row .dot.green{background:var(--green);box-shadow:0 0 8px var(--green)}
-.cloud-status-row .dot.gray{background:var(--muted)}
-.cloud-status-row .dot.red{background:var(--red)}
-.cloud-status-row .status-text{font-size:13px;font-weight:600;color:var(--ink);flex:1}
-.cloud-btn{width:100%;padding:12px;border:0;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:opacity .15s}
-.cloud-btn:active{opacity:.75}
-.cloud-btn.primary-cloud{background:var(--cloud-blue);color:#fff}
-.cloud-btn.secondary-cloud{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
-.cloud-btn.danger-cloud{background:transparent;color:var(--red);border:1px solid var(--red)}
-.cloud-btn:disabled{opacity:.4;cursor:not-allowed}
-.cloud-config-field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;text-align:left;width:100%}
-.cloud-config-field label{font-size:12px;color:var(--muted);font-weight:600}
-.cloud-config-field input{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font-size:14px;font-family:inherit;outline:0}
-.cloud-config-field input:focus{border-color:var(--cloud-blue)}
-.cloud-config-field .hint{font-size:11px;color:var(--muted);margin-top:2px}
+/* OCR-Verbesserung: Vorschau */
+.ocr-preview{display:none;margin-top:12px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.ocr-preview.show{display:block}
+.ocr-preview img{max-width:100%;max-height:120px;border-radius:8px;margin-bottom:8px}
+.ocr-preview .raw-text{font-size:10px;color:var(--muted);max-height:100px;overflow:auto;white-space:pre-wrap;text-align:left;font-family:monospace;padding:8px;background:var(--bg);border-radius:8px}
+.ocr-preview .preview-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.ocr-quality{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-left:6px}
+.ocr-quality.good{background:var(--green2);color:#14764d}
+.ocr-quality.medium{background:#fff7ed;color:#b45309}
+.ocr-quality.bad{background:#fef2f2;color:#dc2626}
 </style>
 </head>
 <body>
 
-<!-- PIN OVERLAY -->
 <div class="pin-overlay" id="pinOverlay">
-  <div class="pin-icon" id="pinIcon">🔐</div>
+  <div class="pin-icon">🔐</div>
   <div class="pin-title" id="pinTitle">PIN eingeben</div>
   <div class="pin-sub" id="pinSub">Zum Entsperren</div>
   <div class="pin-dots"><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div></div>
@@ -243,7 +221,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · ☁️ Multi-Cloud</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2</div>
   </header>
 
   <main id="mainContent">
@@ -253,7 +231,6 @@ body.dark .ocr-progress{background:#2d3748}
       <button class="install-close" id="installCloseBtn">✕</button>
     </div>
 
-    <!-- HOME -->
     <section id="home" class="screen active">
       <div class="search-card" onclick="switchScreen('search')">
         <span class="search-icon">🔎</span><input readonly placeholder="Suche in Dateinamen & PDF-Inhalten..." />
@@ -286,20 +263,19 @@ body.dark .ocr-progress{background:#2d3748}
       <div class="list" id="recentList"></div>
     </section>
 
-    <!-- UPLOAD -->
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR erkennt Betrag, Datum & Firma.<br>✉️ E-Mails (EML/MSG) automatisch.<br>🔍 PDFs werden für Volltextsuche indiziert.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v2 erkennt Betrag, Datum & Firma.<br>✨ Neu: Bild-Vorverarbeitung, Fehlerkorrektur, bessere Erkennung.</p>
         <div class="upload-grid">
-          <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR-Erkennung</span></button>
-          <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR-Erkennung</span></button>
+          <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
+          <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('.pdf,.doc,.docx,.xls,.xlsx')"><div class="ico">📄</div><strong>Datei/PDF</strong><span>Volltext-Index</span></button>
           <button class="upload-tile" onclick="triggerUpload('.eml,.msg')"><div class="ico">✉️</div><strong>E-Mail</strong><span>EML/MSG</span></button>
         </div>
       </div>
       <div class="analysis" id="analysisBox">
-        <h3>📋 Automatische Erkennung</h3>
+        <h3>📋 Automatische Erkennung <span id="ocrQualityBadge"></span></h3>
         <div class="ocr-status" id="ocrStatus"><span>⏳ Warte auf Datei...</span></div>
         <div class="ocr-progress"><i id="ocrProgressBar" style="width:0%"></i></div>
         <div class="edit-field"><label>Typ</label><b id="aType">—</b></div>
@@ -308,15 +284,18 @@ body.dark .ocr-progress{background:#2d3748}
         <div class="edit-field"><label>Betrag</label><input id="aAmountInput" placeholder="z.B. 129,99 €" /></div>
         <div class="edit-field"><label>Tags</label><b id="aTags">—</b></div>
         <div class="edit-field" id="fulltextInfo" style="display:none;border-bottom:0;"><label>📝 Volltext</label><b id="aFulltext" style="font-weight:400;font-size:11px;color:var(--muted);">indiziert</b></div>
+        <div class="ocr-preview" id="ocrPreview">
+          <div class="preview-label">🔍 OCR-Rohtext (geprüft)</div>
+          <div class="raw-text" id="ocrRawText"></div>
+        </div>
         <div class="btn-row">
-          <button class="secondary" onclick="showToast('Bearbeiten')">✏️</button>
+          <button class="secondary" onclick="showToast('Daten können bearbeitet werden')">✏️</button>
           <button class="primary" id="saveDocBtn" onclick="saveCurrentDocument()">💾 Speichern</button>
         </div>
       </div>
       <input type="file" id="fileInput" class="file-input-hidden" multiple accept="*/*" />
     </section>
 
-    <!-- SEARCH -->
     <section id="search" class="screen">
       <div class="search-card" style="margin-top:-27px">
         <span class="search-icon">🔎</span>
@@ -335,7 +314,6 @@ body.dark .ocr-progress{background:#2d3748}
       <div class="list" id="searchList"></div>
     </section>
 
-    <!-- CASES -->
     <section id="cases" class="screen">
       <div class="panel">
         <h2>📁 Vorgänge / Akten</h2>
@@ -344,7 +322,6 @@ body.dark .ocr-progress{background:#2d3748}
       <div id="caseList"></div>
     </section>
 
-    <!-- DASHBOARD -->
     <section id="dashboard" class="screen">
       <div class="panel">
         <h2>📊 Finanzübersicht</h2>
@@ -361,47 +338,27 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
     </section>
 
-    <!-- MORE -->
     <section id="more" class="screen">
       <div class="tabs">
         <button class="tab active" onclick="switchMoreTab('settings')">Archiv</button>
         <button class="tab" onclick="switchMoreTab('budget')">💰 Haushaltsbuch</button>
       </div>
       <div id="settingsTab" class="more-tab">
-        <!-- CLOUD-SYNC SECTION -->
-        <div class="cloud-section">
-          <h3 style="margin-bottom:12px;">☁️ Cloud-Sync</h3>
-          <select class="cloud-provider-select" id="cloudProviderSelect" onchange="onProviderChange()">
-            <option value="google">🔵 Google Drive</option>
-            <option value="nextcloud">☁️ Nextcloud / WebDAV</option>
-            <option value="dropbox" disabled>🟣 Dropbox (bald verfügbar)</option>
-          </select>
-          <div class="cloud-status-row">
-            <span class="dot gray" id="cloudDot"></span>
-            <span class="status-text" id="cloudStatusText">Nicht verbunden</span>
-          </div>
-          <button class="cloud-btn primary-cloud" id="cloudConnectBtn" onclick="cloudConnect()">🔗 Verbinden</button>
-          <div id="cloudActions" style="display:none;">
-            <button class="cloud-btn primary-cloud" onclick="cloudUploadBackup()">⬆️ Backup hochladen</button>
-            <button class="cloud-btn secondary-cloud" onclick="cloudListBackups()">📂 Backups anzeigen</button>
-            <button class="cloud-btn secondary-cloud" onclick="cloudConfigure()">⚙️ Einstellungen</button>
-            <button class="cloud-btn danger-cloud" onclick="cloudDisconnect()">🚫 Verbindung trennen</button>
-          </div>
+        <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
+          <h3>🎯 OCR v2 - Verbesserungen</h3>
+          <p class="hint">✅ Bild-Vorverarbeitung (Graustufen + Kontrast)<br>✅ Fehlerkorrektur (O→0, I→1)<br>✅ Bessere Betrags- und Firmenerkennung<br>✅ OCR-Qualitätsanzeige<br>✅ Rohtext-Vorschau</p>
         </div>
-
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
           <div class="more-card" onclick="changePin()"><div class="ico">🔐</div><strong>PIN ändern</strong><span class="hint">Passwort ändern</span></div>
           <div class="more-card" onclick="switchScreen('dashboard')"><div class="ico">📊</div><strong>Dashboard</strong><span class="hint">Statistiken</span></div>
           <div class="more-card" onclick="showCategories()"><div class="ico">🏷️</div><strong>Kategorien</strong><span class="hint">Alle anzeigen</span></div>
           <div class="more-card" onclick="showOpenDocuments()"><div class="ico">⏳</div><strong>Zu prüfen</strong><span class="hint">Ungeprüfte Belege</span></div>
-          <div class="more-card" onclick="reindexPDFs()"><div class="ico">🔍</div><strong>PDFs indizieren</strong><span class="hint">Volltext für alte PDFs</span></div>
+          <div class="more-card" onclick="reindexPDFs()"><div class="ico">🔍</div><strong>PDFs indizieren</strong><span class="hint">Volltext</span></div>
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
-          <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessener PIN</span></div>
+          <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;">
-          <span class="hint">📦 Version 9.0 · Multi-Cloud-Sync</span>
-        </div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.0 · OCR v2</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -433,7 +390,7 @@ body.dark .ocr-progress{background:#2d3748}
 
 <script>
 // ========== STATE ==========
-const STORAGE_KEY='archiv_data',DARK_KEY='archiv_dark',PIN_HASH_KEY='archiv_pin_hash',CLOUD_CONFIG_KEY='archiv_cloud_config',CLOUD_TOKENS_KEY='archiv_cloud_tokens';
+const STORAGE_KEY='archiv_data',DARK_KEY='archiv_dark',PIN_HASH_KEY='archiv_pin_hash';
 let appData={docs:[],cases:[],nextDocId:1,nextCaseId:1};
 let currentFilter='Alle',pendingDoc=null,isProcessing=false,fileCache=null;
 let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear();
@@ -448,249 +405,12 @@ function verifyPin(p){return hashPin(p)===getPinHash()}
 function savePin(p){localStorage.setItem(PIN_HASH_KEY,hashPin(p))}
 function showPinOverlay(m){pinMode=m||'unlock';pinEntry=[];pinTemp=[];pinChangeOld=[];document.getElementById('pinOverlay').classList.add('show');updatePinUI()}
 function hidePinOverlay(){document.getElementById('pinOverlay').classList.remove('show')}
-function updatePinUI(){
-  const dots=document.querySelectorAll('.pin-dot'),err=document.getElementById('pinError'),t=document.getElementById('pinTitle'),s=document.getElementById('pinSub');
-  dots.forEach((d,i)=>d.classList.toggle('filled',i<pinEntry.length));err.textContent='';
-  if(pinMode==='setup'){t.textContent='🔐 PIN einrichten';s.textContent=pinTemp.length===0?'Gib eine 4-stellige PIN ein':'Wiederhole die PIN'}
-  else if(pinMode==='change'){if(pinChangeOld.length===0){t.textContent='🔐 PIN ändern';s.textContent='Alte PIN eingeben'}else if(pinTemp.length===0){t.textContent='🔐 Neue PIN';s.textContent='Neue 4-stellige PIN'}else{t.textContent='🔐 Bestätigen';s.textContent='Neue PIN wiederholen'}}
-  else{t.textContent='🔐 PIN eingeben';s.textContent='Zum Entsperren'}
-}
-function pinPress(v){
-  const err=document.getElementById('pinError');
-  if(v==='clear'){if(pinEntry.length>0){pinEntry.pop();updatePinUI()}return}
-  if(v==='enter'){if(pinEntry.length===4)handlePinEntry();else err.textContent='⚠️ 4 Ziffern nötig';return}
-  if(pinEntry.length<4){pinEntry.push(v);updatePinUI();if(pinEntry.length===4)setTimeout(handlePinEntry,250)}
-}
-function handlePinEntry(){
-  const err=document.getElementById('pinError'),e=pinEntry.join('');
-  if(pinMode==='unlock'){if(verifyPin(e)){hidePinOverlay();showToast('✅ Entsperrt')}else{err.textContent='❌ Falsche PIN!';pinEntry=[];updatePinUI()}return}
-  if(pinMode==='setup'){if(pinTemp.length===0){pinTemp=[...pinEntry];pinEntry=[];updatePinUI();return}if(pinTemp.join('')===e){savePin(e);hidePinOverlay();showToast('✅ PIN eingerichtet');initApp()}else{err.textContent='❌ Nicht übereinstimmend!';pinTemp=[];pinEntry=[];updatePinUI()}return}
-  if(pinMode==='change'){if(pinChangeOld.length===0){if(verifyPin(e)){pinChangeOld=[...pinEntry];pinEntry=[];updatePinUI()}else{err.textContent='❌ Alte PIN falsch!';pinEntry=[];updatePinUI()}return}if(pinTemp.length===0){pinTemp=[...pinEntry];pinEntry=[];updatePinUI();return}if(pinTemp.join('')===e){savePin(e);hidePinOverlay();showToast('✅ PIN geändert')}else{err.textContent='❌ Nicht übereinstimmend!';pinTemp=[];pinEntry=[];updatePinUI()}return}
-}
+function updatePinUI(){const dots=document.querySelectorAll('.pin-dot'),err=document.getElementById('pinError'),t=document.getElementById('pinTitle'),s=document.getElementById('pinSub');dots.forEach((d,i)=>d.classList.toggle('filled',i<pinEntry.length));err.textContent='';if(pinMode==='setup'){t.textContent='🔐 PIN einrichten';s.textContent=pinTemp.length===0?'Gib eine 4-stellige PIN ein':'Wiederhole die PIN'}else if(pinMode==='change'){if(pinChangeOld.length===0){t.textContent='🔐 PIN ändern';s.textContent='Alte PIN'}else if(pinTemp.length===0){t.textContent='🔐 Neue PIN';s.textContent='Neue 4-stellige PIN'}else{t.textContent='🔐 Bestätigen';s.textContent='Neue PIN wiederholen'}}else{t.textContent='🔐 PIN eingeben';s.textContent='Zum Entsperren'}}
+function pinPress(v){const err=document.getElementById('pinError');if(v==='clear'){if(pinEntry.length>0){pinEntry.pop();updatePinUI()}return}if(v==='enter'){if(pinEntry.length===4)handlePinEntry();else err.textContent='⚠️ 4 Ziffern nötig';return}if(pinEntry.length<4){pinEntry.push(v);updatePinUI();if(pinEntry.length===4)setTimeout(handlePinEntry,250)}}
+function handlePinEntry(){const err=document.getElementById('pinError'),e=pinEntry.join('');if(pinMode==='unlock'){if(verifyPin(e)){hidePinOverlay();showToast('✅ Entsperrt')}else{err.textContent='❌ Falsche PIN!';pinEntry=[];updatePinUI()}return}if(pinMode==='setup'){if(pinTemp.length===0){pinTemp=[...pinEntry];pinEntry=[];updatePinUI();return}if(pinTemp.join('')===e){savePin(e);hidePinOverlay();showToast('✅ PIN eingerichtet');initApp()}else{err.textContent='❌ Nicht übereinstimmend!';pinTemp=[];pinEntry=[];updatePinUI()}return}if(pinMode==='change'){if(pinChangeOld.length===0){if(verifyPin(e)){pinChangeOld=[...pinEntry];pinEntry=[];updatePinUI()}else{err.textContent='❌ Alte PIN falsch!';pinEntry=[];updatePinUI()}return}if(pinTemp.length===0){pinTemp=[...pinEntry];pinEntry=[];updatePinUI();return}if(pinTemp.join('')===e){savePin(e);hidePinOverlay();showToast('✅ PIN geändert')}else{err.textContent='❌ Nicht übereinstimmend!';pinTemp=[];pinEntry=[];updatePinUI()}return}}
 document.querySelectorAll('.pin-key').forEach(b=>b.addEventListener('click',function(){pinPress(this.dataset.value)}));
 function changePin(){showPinOverlay(isPinSet()?'change':'setup')}
 function resetPin(){if(confirm('⚠️ PIN zurücksetzen?')){localStorage.removeItem(PIN_HASH_KEY);showToast('🔄 Zurückgesetzt');setTimeout(()=>location.reload(),800)}}
-
-// ========== CLOUD CONFIG ==========
-let cloudConfig={provider:'google',google:{clientId:''},nextcloud:{url:'',username:'',password:''},dropbox:{}};
-let cloudTokens={};
-function loadCloudConfig(){try{const c=localStorage.getItem(CLOUD_CONFIG_KEY);if(c)cloudConfig={...cloudConfig,...JSON.parse(c)};const t=localStorage.getItem(CLOUD_TOKENS_KEY);if(t)cloudTokens=JSON.parse(t)}catch(e){}}
-function saveCloudConfig(){localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(cloudConfig))}
-function saveCloudTokens(){localStorage.setItem(CLOUD_TOKENS_KEY,JSON.stringify(cloudTokens))}
-
-// Provider architecture
-const CloudProviders={
-  google:{
-    name:'Google Drive',icon:'🔵',
-    isConnected:()=>{const t=cloudTokens.google;return t&&t.access_token&&t.expires_at>Date.now()},
-    needsConfig:()=>!cloudConfig.google.clientId,
-    disconnect:()=>{delete cloudTokens.google;saveCloudTokens()}
-  },
-  nextcloud:{
-    name:'Nextcloud',icon:'☁️',
-    isConnected:()=>!!(cloudConfig.nextcloud.url&&cloudConfig.nextcloud.username&&cloudConfig.nextcloud.password),
-    needsConfig:()=>!(cloudConfig.nextcloud.url&&cloudConfig.nextcloud.username),
-    disconnect:()=>{cloudConfig.nextcloud.password='';saveCloudConfig()}
-  },
-  dropbox:{name:'Dropbox',icon:'🟣',disabled:true}
-};
-
-function getCurrentProvider(){return CloudProviders[cloudConfig.provider]}
-function onProviderChange(){cloudConfig.provider=document.getElementById('cloudProviderSelect').value;saveCloudConfig();updateCloudUI()}
-
-function updateCloudUI(){
-  const sel=document.getElementById('cloudProviderSelect');sel.value=cloudConfig.provider;
-  const p=getCurrentProvider(),dot=document.getElementById('cloudDot'),txt=document.getElementById('cloudStatusText');
-  const connectBtn=document.getElementById('cloudConnectBtn'),actions=document.getElementById('cloudActions');
-  if(!p||p.disabled){dot.className='dot gray';txt.textContent='Nicht verfügbar';connectBtn.style.display='none';actions.style.display='none';return}
-  if(p.isConnected()){dot.className='dot green';txt.textContent='✅ Verbunden mit '+p.name;connectBtn.style.display='none';actions.style.display='block'}
-  else if(p.needsConfig()){dot.className='dot red';txt.textContent='⚙️ Konfiguration nötig';connectBtn.style.display='block';connectBtn.textContent='⚙️ Einrichten';actions.style.display='none'}
-  else{dot.className='dot gray';txt.textContent='Nicht verbunden';connectBtn.style.display='block';connectBtn.textContent='🔗 Verbinden';actions.style.display='none'}
-}
-
-function cloudConnect(){
-  const p=getCurrentProvider();if(!p)return;
-  if(p.needsConfig()){openCloudConfigModal();return}
-  if(cloudConfig.provider==='google')connectGoogle();
-  else if(cloudConfig.provider==='nextcloud'){if(cloudConfig.nextcloud.password){saveCloudConfig();updateCloudUI();showToast('✅ Nextcloud verbunden')}else openCloudConfigModal()}
-}
-
-function cloudDisconnect(){
-  const p=getCurrentProvider();if(!p)return;
-  if(confirm('Verbindung zu '+p.name+' trennen?')){p.disconnect();updateCloudUI();showToast('🚫 Getrennt')}
-}
-
-function cloudConfigure(){openCloudConfigModal()}
-
-function openCloudConfigModal(){
-  const m=document.getElementById('docModal'),t=document.getElementById('modalTitle'),b=document.getElementById('modalBody');
-  t.textContent='⚙️ Cloud konfigurieren';
-  if(cloudConfig.provider==='google'){
-    b.innerHTML='<div class="cloud-config-field"><label>Google Client ID</label><input id="cfgGoogleClient" value="'+(cloudConfig.google.clientId||'')+'" placeholder="xxxxx.apps.googleusercontent.com" /></div><p class="hint" style="text-align:left;margin-bottom:12px;">Aus der Google Cloud Console. Siehe Anleitung.</p><button class="cloud-btn primary-cloud" onclick="saveGoogleConfig()">💾 Speichern</button><button class="secondary-btn" onclick="closeModal()">Abbrechen</button>';
-  }else if(cloudConfig.provider==='nextcloud'){
-    b.innerHTML='<div class="cloud-config-field"><label>WebDAV-URL</label><input id="cfgNcUrl" value="'+(cloudConfig.nextcloud.url||'')+'" placeholder="https://cloud.example.com/remote.php/dav/files/USER/" /></div><div class="cloud-config-field"><label>Benutzername</label><input id="cfgNcUser" value="'+(cloudConfig.nextcloud.username||'')+'" /></div><div class="cloud-config-field"><label>App-Passwort</label><input id="cfgNcPass" type="password" value="'+(cloudConfig.nextcloud.password||'')+'" /></div><p class="hint" style="text-align:left;margin-bottom:12px;">Erstelle ein App-Passwort in Nextcloud: Einstellungen → Sicherheit.</p><button class="cloud-btn primary-cloud" onclick="saveNextcloudConfig()">💾 Speichern</button><button class="secondary-btn" onclick="closeModal()">Abbrechen</button>';
-  }
-  m.classList.add('open');
-}
-
-function saveGoogleConfig(){
-  const v=document.getElementById('cfgGoogleClient').value.trim();
-  if(!v){showToast('⚠️ Client ID nötig');return}
-  cloudConfig.google.clientId=v;saveCloudConfig();closeModal();updateCloudUI();showToast('✅ Gespeichert');
-}
-
-function saveNextcloudConfig(){
-  const url=document.getElementById('cfgNcUrl').value.trim();
-  const u=document.getElementById('cfgNcUser').value.trim();
-  const p=document.getElementById('cfgNcPass').value.trim();
-  if(!url||!u||!p){showToast('⚠️ Alle Felder nötig');return}
-  cloudConfig.nextcloud.url=url;cloudConfig.nextcloud.username=u;cloudConfig.nextcloud.password=p;
-  saveCloudConfig();closeModal();updateCloudUI();showToast('✅ Nextcloud verbunden');
-}
-
-// ========== GOOGLE DRIVE ==========
-function connectGoogle(){
-  const cid=cloudConfig.google.clientId;
-  if(!cid){openCloudConfigModal();return}
-  if(window.google&&google.accounts&&google.accounts.oauth2){
-    try{
-      const client=google.accounts.oauth2.initTokenClient({
-        client_id:cid,
-        scope:'https://www.googleapis.com/auth/drive.file',
-        callback:(resp)=>{
-          if(resp.access_token){
-            cloudTokens.google={access_token:resp.access_token,expires_at:Date.now()+(resp.expires_in||3600)*1000};
-            saveCloudTokens();updateCloudUI();showToast('✅ Google Drive verbunden');
-          }else showToast('❌ Fehler bei Verbindung');
-        }
-      });
-      client.requestAccessToken();
-      return;
-    }catch(e){console.warn('GIS failed',e)}
-  }
-  // Fallback: manual
-  const redirect='https://developers.google.com/oauthplayground';
-  const url='https://accounts.google.com/o/oauth2/v2/auth?client_id='+encodeURIComponent(cid)+'&redirect_uri='+encodeURIComponent(redirect)+'&response_type=token&scope='+encodeURIComponent('https://www.googleapis.com/auth/drive.file')+'&prompt=consent';
-  window.open(url,'_blank');
-  setTimeout(()=>{
-    const token=prompt('Füge den Access-Token ein (nach #access_token= und vor &):');
-    if(token){cloudTokens.google={access_token:token,expires_at:Date.now()+3500*1000};saveCloudTokens();updateCloudUI();showToast('✅ Google Drive verbunden')}
-  },1500);
-}
-
-async function uploadToGoogle(fileName,blob){
-  const t=cloudTokens.google;if(!t||!t.access_token)throw new Error('Nicht verbunden');
-  const metadata={name:fileName,parents:['root'],mimeType:'application/json'};
-  const form=new FormData();
-  form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
-  form.append('file',blob);
-  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+t.access_token},body:form});
-  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Upload fehlgeschlagen')}
-  return await r.json();
-}
-
-async function listFromGoogle(){
-  const t=cloudTokens.google;if(!t)throw new Error('Nicht verbunden');
-  const q=encodeURIComponent("name contains 'archiv_backup' and trashed = false");
-  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&orderBy=createdTime desc&fields=files(id,name,createdTime,size)',{headers:{'Authorization':'Bearer '+t.access_token}});
-  if(!r.ok)throw new Error('Liste fehlgeschlagen');
-  const d=await r.json();return d.files||[];
-}
-
-async function downloadFromGoogle(id){
-  const t=cloudTokens.google;
-  const r=await fetch('https://www.googleapis.com/drive/v3/files/'+id+'?alt=media',{headers:{'Authorization':'Bearer '+t.access_token}});
-  if(!r.ok)throw new Error('Download fehlgeschlagen');
-  return await r.json();
-}
-
-// ========== NEXTCLOUD / WEBDAV ==========
-async function uploadToNextcloud(fileName,blob){
-  const c=cloudConfig.nextcloud;
-  const url=c.url.replace(/\/$/,'')+'/'+encodeURIComponent(fileName);
-  const auth=btoa(c.username+':'+c.password);
-  const r=await fetch(url,{method:'PUT',headers:{'Authorization':'Basic '+auth,'Content-Type':'application/json'},body:blob});
-  if(!r.ok)throw new Error('Upload fehlgeschlagen: '+r.status);
-  return{name:fileName};
-}
-
-async function listFromNextcloud(){
-  const c=cloudConfig.nextcloud;
-  const auth=btoa(c.username+':'+c.password);
-  const body='<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:displayname/><d:getcontentlength/><d:getlastmodified/></d:prop></d:propfind>';
-  const r=await fetch(c.url.replace(/\/$/,'')+'/',{method:'PROPFIND',headers:{'Authorization':'Basic '+auth,'Depth':'1','Content-Type':'application/xml'},body});
-  if(!r.ok)throw new Error('Liste fehlgeschlagen');
-  const text=await r.text();
-  const parser=new DOMParser();
-  const xml=parser.parseFromString(text,'text/xml');
-  const responses=xml.querySelectorAll('response');
-  const files=[];
-  responses.forEach(resp=>{
-    const href=resp.querySelector('href')?.textContent||'';
-    const name=resp.querySelector('displayname')?.textContent||href.split('/').filter(x=>x).pop()||'';
-    if(name.includes('archiv_backup')&&name.endsWith('.json')){
-      const size=resp.querySelector('getcontentlength')?.textContent||'0';
-      const modified=resp.querySelector('getlastmodified')?.textContent||'';
-      files.push({name,path:href,size,createdTime:modified});
-    }
-  });
-  return files;
-}
-
-async function downloadFromNextcloud(path){
-  const c=cloudConfig.nextcloud;
-  const auth=btoa(c.username+':'+c.password);
-  const r=await fetch(path,{headers:{'Authorization':'Basic '+auth}});
-  if(!r.ok)throw new Error('Download fehlgeschlagen');
-  return await r.json();
-}
-
-// ========== CLOUD ACTIONS ==========
-async function cloudUploadBackup(){
-  try{
-    showToast('⏳ Lade hoch...');
-    const data=JSON.stringify(appData,null,2);
-    const blob=new Blob([data],{type:'application/json'});
-    const fn='archiv_backup_'+new Date().toISOString().slice(0,10)+'.json';
-    if(cloudConfig.provider==='google')await uploadToGoogle(fn,blob);
-    else if(cloudConfig.provider==='nextcloud')await uploadToNextcloud(fn,blob);
-    else throw new Error('Unbekannter Anbieter');
-    showToast('✅ Backup hochgeladen: '+fn);
-  }catch(e){
-    showToast('❌ Fehler: '+e.message);
-    if(e.message.includes('401')||e.message.includes('invalid')){const p=getCurrentProvider();if(p)p.disconnect();updateCloudUI()}
-  }
-}
-
-async function cloudListBackups(){
-  try{
-    showToast('⏳ Lade Liste...');
-    let files=[];
-    if(cloudConfig.provider==='google')files=await listFromGoogle();
-    else if(cloudConfig.provider==='nextcloud')files=await listFromNextcloud();
-    if(files.length===0){showToast('📂 Keine Backups gefunden');return}
-    const m=document.getElementById('docModal'),t=document.getElementById('modalTitle'),b=document.getElementById('modalBody');
-    t.textContent='📂 Cloud-Backups';
-    b.innerHTML='<div class="category-list" style="width:100%">'+files.map((f,i)=>'<div class="category-item" onclick="cloudRestore('+i+')" data-file-idx="'+i+'"><div><div class="cat-name">'+f.name+'</div><div class="cat-count">'+(f.createdTime?new Date(f.createdTime).toLocaleString('de-DE'):'')+(f.size?' · '+Math.round(f.size/1024)+' KB':'')+'</div></div><div class="cat-amount">⬇️</div></div>').join('')+'</div><button class="secondary-btn" onclick="closeModal()" style="margin-top:16px">Schließen</button>';
-    window._cloudFiles=files;
-    m.classList.add('open');
-  }catch(e){showToast('❌ Fehler: '+e.message)}
-}
-
-async function cloudRestore(idx){
-  try{
-    const files=window._cloudFiles||[];const f=files[idx];if(!f){showToast('⚠️ Datei nicht gefunden');return}
-    if(!confirm('Backup "'+f.name+'" wiederherstellen? Aktuelle Daten werden überschrieben!'))return;
-    showToast('⏳ Lade herunter...');
-    let data;
-    if(cloudConfig.provider==='google')data=await downloadFromGoogle(f.id);
-    else if(cloudConfig.provider==='nextcloud')data=await downloadFromNextcloud(f.path);
-    if(!data.docs||!data.cases)throw new Error('Ungültiges Backup-Format');
-    if(!confirm('⚠️ ACHTUNG: Alle aktuellen Daten werden überschrieben! Fortfahren?'))return;
-    appData=data;saveData();closeModal();updateUI();updateAllCharts();
-    showToast('✅ Backup wiederhergestellt! ('+appData.docs.length+' Dokumente)');
-  }catch(e){showToast('❌ Fehler: '+e.message)}
-}
 
 // ========== PWA ==========
 let deferredPrompt=null;
@@ -708,8 +428,8 @@ function getChartColors(){const d=document.body.classList.contains('dark');retur
 function updateAllCharts(){updateDashStats();updatePreviewStats()}
 function getMonthlyData(){const docs=appData.docs,m=[],a=[],now=new Date();for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);m.push((d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear());let t=0;docs.forEach(x=>{if(x.date){const p=x.date.split('.');if(p.length===3&&p[1]===(d.getMonth()+1).toString().padStart(2,'0')&&p[2]===d.getFullYear().toString()){const v=parseFloat((x.amount||'').replace(',','.').replace(/[^0-9.]/g,''));if(!isNaN(v))t+=v}}});a.push(Math.round(t*100)/100)}return{months:m,amounts:a}}
 function getCategoryData(){const c={};appData.docs.forEach(d=>{const tags=d.tags||[];const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));if(isNaN(a)||a<=0)return;const cat=tags.find(t=>['Lebensmittel','Auto','Strom','Internet','Versicherung','Handy','Haushalt','Wohnen','Freizeit','Rechnung','Vertrag'].includes(t))||'Sonstiges';c[cat]=(c[cat]||0)+a});return Object.entries(c).sort((a,b)=>b[1]-a[1])}
-function updatePreviewStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);const cnt=docs.filter(d=>d.amount&&parseFloat(d.amount.replace(',','.').replace(/[^0-9.]/g,''))>0).length;const avg=cnt>0?tot/cnt:0;document.getElementById('previewTotal').textContent=tot.toFixed(2)+' €';document.getElementById('previewAvg').textContent=avg.toFixed(2)+' €';document.getElementById('previewCount').textContent=cnt;const ctx=document.getElementById('previewChart').getContext('2d');if(previewChart)previewChart.destroy();const dt=getMonthlyData(),c=getChartColors();previewChart=new Chart(ctx,{type:'line',data:{labels:dt.months,datasets:[{data:dt.amounts,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:c.line,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.parsed.y.toFixed(2)+' €'}}},scales:{y:{grid:{color:c.grid},ticks:{color:c.text,font:{size:9},callback:v=>v+' €'},beginAtZero:true},x:{grid:{display:false},ticks:{color:c.text,font:{size:9}}}}}})};
-function updateDashStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);const cnt=docs.filter(d=>d.amount&&parseFloat(d.amount.replace(',','.').replace(/[^0-9.]/g,''))>0).length;const avg=cnt>0?tot/cnt:0;document.getElementById('dashTotal').textContent=tot.toFixed(2)+' €';document.getElementById('dashAvg').textContent=avg.toFixed(2)+' €';document.getElementById('dashCount').textContent=cnt;const ctxL=document.getElementById('dashLineChart').getContext('2d');if(dashLineChart)dashLineChart.destroy();const dt=getMonthlyData(),c=getChartColors();dashLineChart=new Chart(ctxL,{type:'line',data:{labels:dt.months,datasets:[{data:dt.amounts,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:c.line,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.parsed.y.toFixed(2)+' €'}}},scales:{y:{grid:{color:c.grid},ticks:{color:c.text,font:{size:10},callback:v=>v+' €'},beginAtZero:true},x:{grid:{display:false},ticks:{color:c.text,font:{size:10}}}}}});const ctxP=document.getElementById('dashPieChart').getContext('2d');if(dashPieChart)dashPieChart.destroy();const catData=getCategoryData(),pc=getChartColors().pie;if(catData.length===0){dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels:['Keine Daten'],datasets:[{data:[1],backgroundColor:[c.grid],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:c.text,font:{size:10}}},tooltip:{enabled:false}}}});return}const labels=catData.map(x=>x[0]),vals=catData.map(x=>x[1]);dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:labels.map((_,i)=>pc[i%pc.length]),borderWidth:2,borderColor:document.body.classList.contains('dark')?'#1a1a2e':'#f5f4ee'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:getChartColors().text,font:{size:10},padding:10,boxWidth:12}},tooltip:{callbacks:{label:x=>{const t=x.dataset.data.reduce((a,b)=>a+b,0);return x.label+': '+x.parsed.toFixed(2)+' € ('+((x.parsed/t)*100).toFixed(1)+'%)'}}}},onClick:function(e,el){if(el.length>0){const l=this.data.labels[el[0].index];switchScreenWithFilter('search',l)}}}})};
+function updatePreviewStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);const cnt=docs.filter(d=>d.amount&&parseFloat(d.amount.replace(',','.').replace(/[^0-9.]/g,''))>0).length;const avg=cnt>0?tot/cnt:0;document.getElementById('previewTotal').textContent=tot.toFixed(2)+' €';document.getElementById('previewAvg').textContent=avg.toFixed(2)+' €';document.getElementById('previewCount').textContent=cnt;const ctx=document.getElementById('previewChart').getContext('2d');if(previewChart)previewChart.destroy();const dt=getMonthlyData(),c=getChartColors();previewChart=new Chart(ctx,{type:'line',data:{labels:dt.months,datasets:[{data:dt.amounts,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:c.line,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.parsed.y.toFixed(2)+' €'}}},scales:{y:{grid:{color:c.grid},ticks:{color:c.text,font:{size:9},callback:v=>v+' €'},beginAtZero:true},x:{grid:{display:false},ticks:{color:c.text,font:{size:9}}}}}})}
+function updateDashStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);const cnt=docs.filter(d=>d.amount&&parseFloat(d.amount.replace(',','.').replace(/[^0-9.]/g,''))>0).length;const avg=cnt>0?tot/cnt:0;document.getElementById('dashTotal').textContent=tot.toFixed(2)+' €';document.getElementById('dashAvg').textContent=avg.toFixed(2)+' €';document.getElementById('dashCount').textContent=cnt;const ctxL=document.getElementById('dashLineChart').getContext('2d');if(dashLineChart)dashLineChart.destroy();const dt=getMonthlyData(),c=getChartColors();dashLineChart=new Chart(ctxL,{type:'line',data:{labels:dt.months,datasets:[{data:dt.amounts,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:c.line,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.parsed.y.toFixed(2)+' €'}}},scales:{y:{grid:{color:c.grid},ticks:{color:c.text,font:{size:10},callback:v=>v+' €'},beginAtZero:true},x:{grid:{display:false},ticks:{color:c.text,font:{size:10}}}}}});const ctxP=document.getElementById('dashPieChart').getContext('2d');if(dashPieChart)dashPieChart.destroy();const catData=getCategoryData(),pc=getChartColors().pie;if(catData.length===0){dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels:['Keine Daten'],datasets:[{data:[1],backgroundColor:[c.grid],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:c.text,font:{size:10}}},tooltip:{enabled:false}}}});return}const labels=catData.map(x=>x[0]),vals=catData.map(x=>x[1]);dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:labels.map((_,i)=>pc[i%pc.length]),borderWidth:2,borderColor:document.body.classList.contains('dark')?'#1a1a2e':'#f5f4ee'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:getChartColors().text,font:{size:10},padding:10,boxWidth:12}},tooltip:{callbacks:{label:x=>{const t=x.dataset.data.reduce((a,b)=>a+b,0);return x.label+': '+x.parsed.toFixed(2)+' € ('+((x.parsed/t)*100).toFixed(1)+'%)'}}}},onClick:function(e,el){if(el.length>0){const l=this.data.labels[el[0].index];switchScreenWithFilter('search',l)}}}})}
 
 // ========== DATA ==========
 function loadData(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)appData=JSON.parse(r)}catch(e){}}
@@ -724,6 +444,77 @@ function docCardHTML(doc){const tags=doc.tags||[];const th=tags.map((t,i)=>{let 
 function performSearch(){const q=document.getElementById('searchInput').value.toLowerCase().trim();const filter=currentFilter;let r=appData.docs;if(filter==='offen')r=r.filter(d=>d.status==='offen');else if(filter!=='Alle')r=r.filter(d=>{const t=d.tags||[];return t.includes(filter)||d.type===filter});if(q)r=r.filter(d=>{const s=[d.name,d.type,d.company,d.amount,d.caseName,d.emailSubject,d.emailFrom,d.emailTo,d.emailBody,...(d.tags||[])].join(' ').toLowerCase();const f=d.fulltext?d.fulltext.toLowerCase():'';return s.includes(q)||f.includes(q)});const list=document.getElementById('searchList');list.innerHTML=r.length===0?'<div class="panel"><h3>Keine Treffer</h3></div>':r.map(d=>docCardHTML(d)).join('');document.getElementById('resultCount').textContent=r.length+' Treffer'}
 function setFilter(f){currentFilter=f;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter===f));performSearch()}
 function switchScreenWithFilter(s,f){switchScreen(s);if(s==='search')setFilter(f)}
+
+// ============================================================
+// 🎯 OCR v2 - VERBESSERTE BILDERKENNUNG
+// ============================================================
+
+// 1. BILD-VORVERARBEITUNG (Graustufen + Kontrast + Threshold)
+async function preprocessImage(base64){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const canvas=document.createElement('canvas');
+        // Skalierung für bessere OCR (mindestens 1500px Breite)
+        const maxW=1800;
+        let w=img.width,h=img.height;
+        if(w>maxW){h=Math.round(h*(maxW/w));w=maxW}
+        if(w<1000&&img.width<1500){w=img.width*2;h=img.height*2}
+        canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        const imageData=ctx.getImageData(0,0,w,h);
+        const data=imageData.data;
+        // Graustufen + Kontrastverstärkung
+        const contrast=1.5;
+        const intercept=128*(1-contrast);
+        for(let i=0;i<data.length;i+=4){
+          let g=0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+          g=contrast*g+intercept;
+          g=Math.max(0,Math.min(255,g));
+          data[i]=data[i+1]=data[i+2]=g;
+        }
+        ctx.putImageData(imageData,0,0);
+        resolve(canvas.toDataURL('image/png'));
+      }catch(e){console.warn('Preprocessing fehlgeschlagen:',e);resolve(base64)}
+    };
+    img.onerror=()=>resolve(base64);
+    img.src=base64;
+  });
+}
+
+// 2. OCR-FEHLERKORREKTUR (typische Verwechslungen)
+function correctOCRText(text){
+  let t=text;
+  // In Zahlenkontext: O→0, I→1, l→1, S→5, B→8, Z→2, G→6, D→0
+  t=t.replace(/(\d)[OolI]/g,'$10').replace(/[OolI](\d)/g,'0$1');
+  t=t.replace(/(\d)S/g,'$15').replace(/S(\d)/g,'5$1');
+  t=t.replace(/(\d)B/g,'$18').replace(/B(\d)/g,'8$1');
+  t=t.replace(/(\d)Z/g,'$12').replace(/Z(\d)/g,'2$1');
+  t=t.replace(/(\d)G/g,'$16').replace(/G(\d)/g,'6$1');
+  // Komma/Punkt-Verwechslung bei Beträgen: "1O0,5O" → "100,50"
+  t=t.replace(/(\d)[,.](\d{2})\b/g,(m,a,b)=>a+','+b);
+  // Mehrfache Leerzeichen reduzieren
+  t=t.replace(/[ \t]+/g,' ');
+  // "€" reparieren
+  t=t.replace(/EUR|Eur|eur/g,'€');
+  return t;
+}
+
+// 3. OCR-QUALITÄT BEWERTEN
+function assessOCRQuality(text,amount,date,company){
+  let score=0;
+  if(text&&text.length>50)score++;
+  if(text&&text.length>200)score++;
+  if(amount&&amount.length>3)score+=2;
+  if(date&&date.length>=8)score+=2;
+  if(company&&company.length>2)score++;
+  if(score>=6)return{label:'Sehr gut',cls:'good'};
+  if(score>=4)return{label:'Gut',cls:'good'};
+  if(score>=2)return{label:'Mittel',cls:'medium'};
+  return{label:'Schwach',cls:'bad'};
+}
 
 // ========== UPLOAD ==========
 function triggerUpload(accept){if(isProcessing)return;const i=document.getElementById('fileInput');i.accept=accept||'*/*';i.multiple=false;i.onchange=function(){if(this.files&&this.files.length>0)handleFile(this.files[0]);this.value=''};i.click()}
@@ -742,49 +533,320 @@ async function handleFile(file){
     const tags=[dt];const nl=file.name.toLowerCase();
     let emailData=null,text='',company='',date='',amount='',fulltext='';
     const fi=document.getElementById('fulltextInfo');
-    if(dt==='E-Mail'){p.style.width='30%';s.innerHTML='<span class="spinner"></span> E-Mail...';emailData=await parseEmail(b64,file.name);p.style.width='70%';
-      if(emailData){pendingDoc={name:emailData.subject||file.name,emailSubject:emailData.subject||'',emailFrom:emailData.from||'',emailTo:emailData.to||'',emailDate:emailData.date||'',emailBody:emailData.body||''};tags.push('E-Mail');
+    const preview=document.getElementById('ocrPreview');
+
+    // E-MAIL
+    if(dt==='E-Mail'){
+      p.style.width='30%';s.innerHTML='<span class="spinner"></span> E-Mail...';
+      emailData=await parseEmail(b64,file.name);
+      p.style.width='70%';
+      if(emailData){
+        pendingDoc={name:emailData.subject||file.name,emailSubject:emailData.subject||'',emailFrom:emailData.from||'',emailTo:emailData.to||'',emailDate:emailData.date||'',emailBody:emailData.body||''};
+        tags.push('E-Mail');
         if(emailData.subject.toLowerCase().includes('rechnung')||emailData.body.toLowerCase().includes('rechnung'))tags.push('Rechnung');
         if(emailData.subject.toLowerCase().includes('garantie')||emailData.body.toLowerCase().includes('garantie'))tags.push('Garantie');
         company=emailData.from||'';
         if(emailData.date){const d=new Date(emailData.date);if(!isNaN(d))date=d.getDate().toString().padStart(2,'0')+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear()}
         if(emailData.body){const a=extractAmount(emailData.body);if(a)amount=a;fulltext=emailData.body}
-      }fi.style.display='none';
+      }
+      fi.style.display='none';preview.classList.remove('show');
     }
-    if(dt==='PDF'&&!emailData){p.style.width='30%';s.innerHTML='<span class="spinner"></span> PDF-Text...';const t=await extractTextFromPDF(b64);p.style.width='70%';
-      if(t){text=t;fulltext=t;s.innerHTML='📝 '+fulltext.length+' Zeichen';fi.style.display='flex';document.getElementById('aFulltext').textContent='✅ '+fulltext.length+' Zeichen'}
-      else{fi.style.display='flex';document.getElementById('aFulltext').textContent='⚠️ Kein Text'}
-      company=extractCompany(t)||company;date=extractDate(t)||date;amount=extractAmount(t)||amount;
-      const tl=t.toLowerCase();
-      if(tl.includes('rechnung'))tags.push('Rechnung');if(tl.includes('garantie'))tags.push('Garantie');if(tl.includes('vertrag'))tags.push('Vertrag');if(tl.includes('versicherung'))tags.push('Versicherung');if(tl.includes('strom'))tags.push('Strom');if(tl.includes('internet'))tags.push('Internet');
-    }else if(dt==='Bild'&&!emailData){p.style.width='30%';s.innerHTML='<span class="spinner"></span> OCR...';text=await performOCR(b64);p.style.width='70%';fi.style.display='none';
-      if(text){s.innerHTML='📝 '+text.length+' Zeichen';company=extractCompany(text)||company;date=extractDate(text)||date;amount=extractAmount(text)||amount;
-        const tl=text.toLowerCase();if(tl.includes('rechnung'))tags.push('Rechnung');if(tl.includes('garantie'))tags.push('Garantie')}
-    }else if(dt!=='E-Mail'){fi.style.display='none'}
-    if(nl.includes('rechnung'))tags.push('Rechnung');if(nl.includes('garantie'))tags.push('Garantie');if(nl.includes('vertrag'))tags.push('Vertrag');
+
+    // PDF
+    if(dt==='PDF'&&!emailData){
+      p.style.width='30%';s.innerHTML='<span class="spinner"></span> PDF-Text...';
+      const t=await extractTextFromPDF(b64);p.style.width='70%';
+      text=correctOCRText(t);
+      if(text&&text.length>10){
+        fulltext=text;
+        s.innerHTML='📝 '+fulltext.length+' Zeichen extrahiert';
+        fi.style.display='flex';
+        document.getElementById('aFulltext').textContent='✅ '+fulltext.length+' Zeichen';
+      }else{
+        fi.style.display='flex';
+        document.getElementById('aFulltext').textContent='⚠️ Kein Text';
+      }
+      company=extractCompany(text)||company;
+      date=extractDate(text)||date;
+      amount=extractAmount(text)||amount;
+      tags.push(...detectTags(text));
+      preview.classList.remove('show');
+    }
+    // BILD mit OCR v2
+    else if(dt==='Bild'&&!emailData){
+      p.style.width='25%';s.innerHTML='<span class="spinner"></span> Bild vorbereiten...';
+      const preprocessed=await preprocessImage(b64);
+      p.style.width='40%';s.innerHTML='<span class="spinner"></span> OCR v2 läuft... (10-20 Sek.)';
+      text=await performOCR(preprocessed);
+      text=correctOCRText(text);
+      p.style.width='85%';
+      fi.style.display='none';
+      if(text&&text.length>10){
+        s.innerHTML='📝 Text erkannt ('+text.length+' Zeichen)';
+        company=extractCompany(text)||company;
+        date=extractDate(text)||date;
+        amount=extractAmount(text)||amount;
+        tags.push(...detectTags(text));
+        // Rohtext-Vorschau anzeigen
+        preview.classList.add('show');
+        document.getElementById('ocrRawText').textContent=text.substring(0,1500);
+      }else{
+        s.innerHTML='⚠️ Kein Text erkannt - bitte schärferes Foto versuchen';
+      }
+    }else if(dt!=='E-Mail'){fi.style.display='none';preview.classList.remove('show')}
+
+    // Tags aus Dateinamen
+    if(nl.includes('rechnung')||nl.includes('invoice'))tags.push('Rechnung');
+    if(nl.includes('garantie')||nl.includes('warranty'))tags.push('Garantie');
+    if(nl.includes('vertrag')||nl.includes('contract'))tags.push('Vertrag');
+    if(nl.includes('versicherung'))tags.push('Versicherung');
+    if(nl.includes('strom'))tags.push('Strom');
+    if(nl.includes('internet'))tags.push('Internet');
+    if(nl.includes('handy')||nl.includes('phone'))tags.push('Handy');
+    if(nl.includes('auto')||nl.includes('car'))tags.push('Auto');
     const ut=[...new Set(tags)];
-    if(!pendingDoc){pendingDoc={name:file.name,type:dt,icon:im[dt]||'📄',tags:ut,amount,date,company,fileName:file.name,fileSize:file.size,fileType:file.type,status:'offen',caseName:'',caseId:null,emailSubject:'',emailFrom:'',emailTo:'',emailDate:'',emailBody:'',fulltext:fulltext||''}}
-    else{pendingDoc.type=dt;pendingDoc.icon=im[dt]||'📄';pendingDoc.tags=ut;pendingDoc.amount=amount||pendingDoc.amount||'';pendingDoc.date=date||pendingDoc.date||'';pendingDoc.company=company||pendingDoc.company||'';pendingDoc.fileName=file.name;pendingDoc.fileSize=file.size;pendingDoc.fileType=file.type;pendingDoc.status='offen';pendingDoc.fulltext=fulltext||''}
-    document.getElementById('aType').textContent=dt;document.getElementById('aCompanyInput').value=company||pendingDoc.emailFrom||'';document.getElementById('aDateInput').value=date||'';document.getElementById('aAmountInput').value=amount||'';document.getElementById('aTags').textContent=ut.join(', ');
-    p.style.width='100%';s.innerHTML='✅ Fertig!';
-    switchScreen('upload');document.getElementById('analysisBox').scrollIntoView({behavior:'smooth',block:'center'});
-    showToast('📎 '+file.name+' analysiert');
+
+    if(!pendingDoc){
+      pendingDoc={name:file.name,type:dt,icon:im[dt]||'📄',tags:ut,amount,date,company,fileName:file.name,fileSize:file.size,fileType:file.type,status:'offen',caseName:'',caseId:null,emailSubject:'',emailFrom:'',emailTo:'',emailDate:'',emailBody:'',fulltext:fulltext||''};
+    }else{
+      pendingDoc.type=dt;pendingDoc.icon=im[dt]||'📄';pendingDoc.tags=ut;pendingDoc.amount=amount||pendingDoc.amount||'';pendingDoc.date=date||pendingDoc.date||'';pendingDoc.company=company||pendingDoc.company||'';pendingDoc.fileName=file.name;pendingDoc.fileSize=file.size;pendingDoc.fileType=file.type;pendingDoc.status='offen';pendingDoc.fulltext=fulltext||'';
+    }
+
+    // Qualitätsanzeige
+    const q=assessOCRQuality(text,amount,date,company);
+    const badge=document.getElementById('ocrQualityBadge');
+    badge.innerHTML='<span class="ocr-quality '+q.cls+'">'+q.label+'</span>';
+
+    document.getElementById('aType').textContent=dt;
+    document.getElementById('aCompanyInput').value=company||pendingDoc.emailFrom||'';
+    document.getElementById('aDateInput').value=date||'';
+    document.getElementById('aAmountInput').value=amount||'';
+    document.getElementById('aTags').textContent=ut.join(', ');
+    p.style.width='100%';s.innerHTML='✅ Fertig! (Qualität: '+q.label+')';
+    switchScreen('upload');
+    document.getElementById('analysisBox').scrollIntoView({behavior:'smooth',block:'center'});
+    showToast('📎 '+file.name+' analysiert · '+q.label);
   }catch(e){console.error(e);showToast('⚠️ '+e.message);document.getElementById('ocrStatus').innerHTML='❌ '+e.message}
   finally{isProcessing=false;document.getElementById('saveDocBtn').disabled=false}
 }
-async function extractTextFromPDF(b64){try{const l=window.pdfjsLib;if(!l)return'';l.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';const bin=atob(b64.split(',')[1]);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);const pdf=await l.getDocument({data:bytes}).promise;let t='';for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();t+=c.items.map(x=>x.str).join(' ')+'\n'}return t}catch(e){return''}}
-async function performOCR(b64){try{if(typeof Tesseract==='undefined')return'';const r=await Tesseract.recognize(b64,'deu',{logger:m=>{if(m.status==='recognizing text'){const p=Math.round(m.progress*100);document.getElementById('ocrProgressBar').style.width=(30+p*0.4)+'%'}}});return r.data.text}catch(e){return''}}
-function extractCompany(t){const c=['Amazon','Google','Apple','Samsung','Vodafone','Telekom','Stadtwerke','Allianz','AXA','HUK','Sparkasse','Rewe','Aldi','Lidl','MediaMarkt','Saturn','IKEA','Zalando','Otto','eBay','PayPal','Netflix','Spotify','Microsoft','Adobe','DHL','Hermes','UPS','FedEx','Deutsche Bahn','Lufthansa'];for(const x of c)if(t.toLowerCase().includes(x.toLowerCase()))return x;const m=t.match(/(?:Firma|Anbieter|Unternehmen)[\s:]+([A-Za-zäöüßÄÖÜ][A-Za-zäöüßÄÖÜ\s\-\.]+)/i);return m?m[1].trim():''}
-function extractDate(t){const p=[/(\d{2})[\.\-/](\d{2})[\.\-/](\d{4})/,/(\d{2})[\.\-/](\d{2})[\.\-/](\d{2})/,/(\d{4})[\.\-/](\d{2})[\.\-/](\d{2})/];for(const x of p){const m=t.match(x);if(m){let d,mo,y;if(m[0].length===10){if(parseInt(m[1])>31){y=m[1];mo=m[2];d=m[3]}else{d=m[1];mo=m[2];y=m[3]}}else{d=m[1];mo=m[2];y='20'+m[3]}return d+'.'+mo+'.'+y}}return''}
-function extractAmount(t){const p=[{r:/(?:Gesamtsumme|Verbleibender Rechnungsbetrag)[\s\S]*?(\d{1,3}[.,]\d{2})/i,pr:1},{r:/(\d{1,3}[.,]\d{2})\s*(?:EUR|Euro|€)/i,pr:2},{r:/(?:Summe)[\s:]*(\d{1,3}[.,]\d{2})/i,pr:3},{r:/(\d{1,3}[.,]\d{2})\s*[€€]?/i,pr:4}];let bm='',bs=-1;for(const x of p){const m=t.match(x.r);if(m){let a=m[1].replace(/[^0-9,.]/g,'');if(!a.includes(',')&&!a.includes('.'))continue;let v=parseFloat(a.replace(',','.'));if(!isNaN(v)&&v>0&&v<5000){let sc=100-Math.abs(v-80)*0.5;sc+=(10-x.pr)*10;if(sc>bs){bs=sc;bm=a.replace('.',',')+' €'}}}}if(!bm){const m=t.match(/(\d{2})(\d{2})\s*[€€]?/i);if(m){const v=parseInt(m[1]+m[2]);if(v>0&&v<5000)bm=m[1]+','+m[2]+' €'}}return bm}
+
+// ========== OCR ENGINE (verbessert) ==========
+async function performOCR(b64){
+  try{
+    if(typeof Tesseract==='undefined')return'';
+    const r=await Tesseract.recognize(b64,'deu',{
+      logger:m=>{if(m.status==='recognizing text'){const p=Math.round(m.progress*100);document.getElementById('ocrProgressBar').style.width=(40+p*0.4)+'%'}},
+      // Bessere Parameter für Belege
+      tessedit_pageseg_mode:'6', // Uniform block of text
+      tessedit_ocr_engine_mode:'1', // LSTM only (genauer)
+      preserve_interword_spaces:'1'
+    });
+    return r.data.text;
+  }catch(e){console.error('OCR-Fehler:',e);return''}
+}
+
+// ========== PDF EXTRAKTION ==========
+async function extractTextFromPDF(b64){
+  try{
+    const l=window.pdfjsLib;if(!l)return'';
+    l.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const bin=atob(b64.split(',')[1]);
+    const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    const pdf=await l.getDocument({data:bytes}).promise;
+    let t='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const pg=await pdf.getPage(i);
+      const c=await pg.getTextContent();
+      t+=c.items.map(x=>x.str).join(' ')+'\n';
+    }
+    return t;
+  }catch(e){return''}
+}
+
+// ========== FIRMENERKENNUNG (verbessert) ==========
+function extractCompany(t){
+  if(!t)return'';
+  // Bekannte Firmen
+  const companies=['Amazon','Google','Apple','Samsung','Vodafone','Telekom','Stadtwerke','Allianz','AXA','HUK','Sparkasse','Volksbank','Rewe','Aldi','Lidl','MediaMarkt','Saturn','IKEA','Zalando','Otto','eBay','PayPal','Netflix','Spotify','Microsoft','Adobe','DHL','Hermes','UPS','FedEx','Deutsche Bahn','Lufthansa','Netto','Penny','Kaufland','Edeka','Rossmann','dm','Tchibo','Deichmann','NKD','Ernsting','Bonprix','About You','Check24','Verivox','1&1','O2','Congstar','Klarmobil','Prima','Wüstenrot','Debeka','Barmenia','Signal Iduna','CosmosDirekt','HanseMerkur'];
+  for(const c of companies)if(t.toLowerCase().includes(c.toLowerCase()))return c;
+
+  // Deutsche Rechtsformen
+  const rf=t.match(/([A-ZÄÖÜ][A-Za-zäöüßÄÖÜ\.\-]*(?:\s+[A-ZÄÖÜa-zäöüß0-9\.\-&]+){0,4})\s+(GmbH|AG|KG|OHG|UG|mbH|e\.K\.|eG|GbR|Co\.|& Co|KGaA|SE|Stiftung)/);
+  if(rf){
+    let name=(rf[1]+' '+rf[2]).trim();
+    name=name.replace(/^(Herrn?|Frau|Firma|An|Von)\s+/i,'').trim();
+    if(name.length>3&&name.length<60)return name;
+  }
+
+  // Erste Zeile (oft Firmenname)
+  const lines=t.split('\n').map(l=>l.trim()).filter(l=>l.length>2);
+  for(let i=0;i<Math.min(5,lines.length);i++){
+    const line=lines[i];
+    if(/^(Rechnung|Bestellung|Datum|Kundennummer|Bestellnummer)/i.test(line))continue;
+    if(/^[A-ZÄÖÜ]/.test(line)&&line.length>3&&line.length<50&&!/^\d/.test(line)&&!/\d{4,}/.test(line))return line.replace(/[,\-]+$/,'').trim();
+  }
+
+  return'';
+}
+
+// ========== DATUM-ERKENNUNG (verbessert) ==========
+function extractDate(t){
+  if(!t)return'';
+  const patterns=[
+    /(\d{2})[\.\-/](\d{2})[\.\-/](\d{4})/,
+    /(\d{2})[\.\-/](\d{2})[\.\-/](\d{2})/,
+    /(\d{4})[\.\-/](\d{2})[\.\-/](\d{2})/
+  ];
+  for(const x of patterns){
+    const m=t.match(x);
+    if(m){
+      let d,mo,y;
+      if(m[0].length===10){
+        if(parseInt(m[1])>31){y=m[1];mo=m[2];d=m[3]}
+        else{d=m[1];mo=m[2];y=m[3]}
+      }else{d=m[1];mo=m[2];y='20'+m[3]}
+      // Plausibilität
+      if(parseInt(d)>=1&&parseInt(d)<=31&&parseInt(mo)>=1&&parseInt(mo)<=12&&parseInt(y)>=2020&&parseInt(y)<=2030){
+        return d+'.'+mo+'.'+y;
+      }
+    }
+  }
+  return'';
+}
+
+// ========== BETRAGSERKENNUNG (massiv verbessert) ==========
+function extractAmount(t){
+  if(!t)return'';
+  // Keyword-basierte Suche mit Priorität
+  const keywordGroups=[
+    {words:['Rechnungsbetrag','Endbetrag','Gesamtbetrag','Zu zahlen','Zahlbetrag','Verbleibender','Gesamtsumme'],pr:1},
+    {words:['Bruttobetrag','Brutto','Gesamt','Summe','Total','Endsumme','Gesamtpreis'],pr:2},
+    {words:['Nettobetrag','Netto','Zwischensumme','Übertrag'],pr:3},
+    {words:['Betrag','EUR','Euro','€','MwSt','USt','Steuer'],pr:4}
+  ];
+
+  let candidates=[];
+  const lines=t.split(/[\n\r]+/);
+
+  // Durchsuche Zeilen mit Keywords
+  for(const line of lines){
+    const lineLower=line.toLowerCase();
+    // Finde alle Beträge in der Zeile
+    const amountRegex=/(\d{1,3}(?:[\.,]\d{3})*[\.,]\d{2})\s*€?/g;
+    const amounts=[...line.matchAll(amountRegex)];
+
+    for(const g of keywordGroups){
+      if(g.words.some(w=>lineLower.includes(w.toLowerCase()))){
+        for(const am of amounts){
+          let raw=am[1];
+          let val=parseAmount(raw);
+          if(val&&val>0&&val<10000){
+            candidates.push({val,raw,pr:g.pr,line:line.substring(0,80)});
+          }
+        }
+      }
+    }
+  }
+
+  // Fallback: alle Beträge im Text
+  if(candidates.length===0){
+    const allAmounts=[...t.matchAll(/(\d{1,3}(?:[\.,]\d{3})*[\.,]\d{2})/g)];
+    for(const m of allAmounts){
+      const val=parseAmount(m[1]);
+      if(val&&val>0&&val<10000)candidates.push({val,raw:m[1],pr:5});
+    }
+  }
+
+  if(candidates.length===0)return'';
+
+  // Sortiere: niedrigere Priorität zuerst, dann höherer Wert bevorzugt (Gesamtsumme)
+  candidates.sort((a,b)=>{
+    if(a.pr!==b.pr)return a.pr-b.pr;
+    return b.val-a.val; // Höherer Wert bevorzugt
+  });
+
+  const best=candidates[0];
+  return best.val.toFixed(2).replace('.',',')+' €';
+}
+
+function parseAmount(s){
+  // Normalisieren: 1.234,56 → 1234.56 / 1,234.56 → 1234.56
+  let clean=s.replace(/\s/g,'');
+  // Wenn Komma als letztes Trennzeichen und 2 Stellen danach: deutsches Format
+  const lastComma=clean.lastIndexOf(',');
+  const lastDot=clean.lastIndexOf('.');
+  if(lastComma>lastDot){
+    // 1.234,56
+    clean=clean.replace(/\./g,'').replace(',','.');
+  }else if(lastDot>lastComma){
+    // 1,234.56 → US-Format
+    clean=clean.replace(/,/g,'');
+  }else{
+    clean=clean.replace(',','.');
+  }
+  const v=parseFloat(clean);
+  return isNaN(v)?null:v;
+}
+
+// ========== TAG-ERKENNUNG ==========
+function detectTags(t){
+  const tags=[];
+  const tl=t.toLowerCase();
+  if(tl.includes('rechnung')||tl.includes('invoice')||tl.includes('beleg'))tags.push('Rechnung');
+  if(tl.includes('garantie')||tl.includes('warranty')||tl.includes('gewährleistung'))tags.push('Garantie');
+  if(tl.includes('vertrag')||tl.includes('contract'))tags.push('Vertrag');
+  if(tl.includes('versicherung')||tl.includes('versicherungsschein'))tags.push('Versicherung');
+  if(tl.includes('strom')||tl.includes('energie'))tags.push('Strom');
+  if(tl.includes('internet')||tl.includes('dsl')||tl.includes('glasfaser'))tags.push('Internet');
+  if(tl.includes('lebensmittel')||tl.includes('supermarkt')||tl.includes('kasse'))tags.push('Lebensmittel');
+  if(tl.includes('tanken')||tl.includes('kraftstoff')||tl.includes('benzin')||tl.includes('diesel'))tags.push('Auto');
+  if(tl.includes('apotheke')||tl.includes('medikament'))tags.push('Gesundheit');
+  if(tl.includes('miete')||tl.includes('nebenkosten'))tags.push('Wohnen');
+  return tags;
+}
+
+// ========== E-MAIL PARSEN ==========
 function readFileAsBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)})}
-async function parseEmail(b64,fn){try{const t=atob(b64.split(',')[1]);const lines=t.split(/\r?\n/);let f='',to='',s='',d='',b='',isB=false;for(const l of lines){if(!isB){if(l.toLowerCase().startsWith('from:'))f=l.substring(5).trim();else if(l.toLowerCase().startsWith('to:'))to=l.substring(3).trim();else if(l.toLowerCase().startsWith('subject:'))s=l.substring(8).trim();else if(l.toLowerCase().startsWith('date:'))d=l.substring(5).trim();else if(l.trim()==='')isB=true}else b+=l+'\n'}if(!f&&!s){const fm=t.match(/From:\s*(.+)/i);if(fm)f=fm[1].trim();const sm=t.match(/Subject:\s*(.+)/i);if(sm)s=sm[1].trim();const dm=t.match(/Date:\s*(.+)/i);if(dm)d=dm[1].trim();b=t}if(s)s=s.replace(/[=\?]/g,' ').trim();return{from:f||'',to:to||'',subject:s||fn,date:d||'',body:b||''}}catch(e){return null}}
+async function parseEmail(b64,fn){
+  try{
+    const t=atob(b64.split(',')[1]);
+    const lines=t.split(/\r?\n/);
+    let f='',to='',s='',d='',b='',isB=false;
+    for(const l of lines){
+      if(!isB){
+        if(l.toLowerCase().startsWith('from:'))f=l.substring(5).trim();
+        else if(l.toLowerCase().startsWith('to:'))to=l.substring(3).trim();
+        else if(l.toLowerCase().startsWith('subject:'))s=l.substring(8).trim();
+        else if(l.toLowerCase().startsWith('date:'))d=l.substring(5).trim();
+        else if(l.trim()==='')isB=true;
+      }else b+=l+'\n';
+    }
+    if(!f&&!s){
+      const fm=t.match(/From:\s*(.+)/i);if(fm)f=fm[1].trim();
+      const sm=t.match(/Subject:\s*(.+)/i);if(sm)s=sm[1].trim();
+      const dm=t.match(/Date:\s*(.+)/i);if(dm)d=dm[1].trim();
+      b=t;
+    }
+    if(s)s=s.replace(/[=\?]/g,' ').trim();
+    return{from:f||'',to:to||'',subject:s||fn,date:d||'',body:b||''};
+  }catch(e){return null}
+}
+
+// ========== SAVE ==========
 function saveCurrentDocument(){
   if(!pendingDoc){showToast('⚠️ Kein Dokument');return}
   if(!pendingDoc.fileName){showToast('⚠️ Keine Datei-Referenz!');return}
-  const c=document.getElementById('aCompanyInput').value.trim(),d=document.getElementById('aDateInput').value.trim(),a=document.getElementById('aAmountInput').value.trim();
+  const c=document.getElementById('aCompanyInput').value.trim();
+  const d=document.getElementById('aDateInput').value.trim();
+  const a=document.getElementById('aAmountInput').value.trim();
   const doc={id:appData.nextDocId++,name:pendingDoc.name||pendingDoc.fileName,type:pendingDoc.type,icon:pendingDoc.icon||'📄',tags:pendingDoc.tags||[],amount:a||pendingDoc.amount||'',date:d||pendingDoc.date||new Date().toLocaleDateString('de-DE'),company:c||pendingDoc.company||'',fileName:pendingDoc.fileName,fileSize:pendingDoc.fileSize||0,fileType:pendingDoc.fileType||'',status:'offen',caseName:pendingDoc.caseName||'',caseId:pendingDoc.caseId||null,createdAt:new Date().toISOString(),emailSubject:pendingDoc.emailSubject||'',emailFrom:pendingDoc.emailFrom||'',emailTo:pendingDoc.emailTo||'',emailDate:pendingDoc.emailDate||'',emailBody:pendingDoc.emailBody||'',fulltext:pendingDoc.fulltext||''};
-  appData.docs.push(doc);saveData();fileCache=null;pendingDoc=null;showToast('✅ Gespeichert!');switchScreen('home');
+  appData.docs.push(doc);saveData();
+  fileCache=null;pendingDoc=null;
+  document.getElementById('ocrQualityBadge').innerHTML='';
+  document.getElementById('ocrPreview').classList.remove('show');
+  showToast('✅ Gespeichert!');
+  switchScreen('home');
 }
 
 // ========== CASES ==========
@@ -806,7 +868,7 @@ function openDocument(id){
   t.textContent=doc.emailSubject||doc.name;
   if(!doc.fileName){b.innerHTML='<div class="big-icon">📄</div><div class="file-name">Keine Datei</div><button class="secondary-btn" onclick="closeModal()">Schließen</button>';m.classList.add('open');return}
   const isOpen=doc.status==='offen',isEmail=doc.type==='E-Mail'||(doc.tags&&doc.tags.includes('E-Mail')),hasFt=doc.fulltext&&doc.fulltext.length>10;
-  let ep='';if(isEmail&&doc.emailBody)ep='<div class="email-meta">'+(doc.emailFrom?'<div><strong>Von:</strong> '+doc.emailFrom+'</div>':'')+(doc.emailDate?'<div><strong>Datum:</strong> '+doc.emailDate+'</div>':'')+(doc.emailSubject?'<div><strong>Betreff:</strong> '+doc.emailSubject+'</div>':'')+'</div><div class="email-preview">'+doc.emailBody.substring(0,2000)+'</div>';
+  let ep='';if(isEmail&&doc.emailBody)ep='<div class="email-preview">'+doc.emailBody.substring(0,2000)+'</div>';
   const ft=hasFt?'<div style="font-size:11px;color:var(--muted);margin:8px 0">📝 '+doc.fulltext.length+' Zeichen indiziert</div>':'';
   b.innerHTML='<div class="big-icon">'+(isEmail?'✉️':'📂')+'</div><div class="file-name">'+(doc.emailSubject||doc.fileName)+'</div><div class="file-info">'+(doc.type||'Dokument')+' · '+(doc.date||'')+' · '+(doc.amount||'')+(doc.company?' · '+doc.company:'')+'<br>Status: '+(isOpen?'⏳ zu prüfen':'✅ geprüft')+'</div>'+ft+ep+'<div class="status-toggle"><button class="'+(isOpen?'offen-btn active':'')+'" onclick="toggleStatus('+doc.id+',\'offen\')">⏳ Zu prüfen</button><button class="'+(!isOpen?'active':'')+'" onclick="toggleStatus('+doc.id+',\'erledigt\')">✅ Geprüft</button></div><button class="download-btn" onclick="downloadDocument('+doc.id+')">⬇️ Datei öffnen</button><button class="secondary-btn" onclick="closeModal()">Schließen</button>';
   m.classList.add('open');
@@ -817,7 +879,7 @@ function closeModal(){document.getElementById('docModal').classList.remove('open
 document.getElementById('docModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
 
 // ========== REINDEX ==========
-async function reindexPDFs(){const pdfs=appData.docs.filter(d=>d.type==='PDF'&&(!d.fulltext||d.fulltext.length<10));if(pdfs.length===0){showToast('✅ Alle PDFs indiziert!');return}showToast('⏳ '+pdfs.length+' PDFs...');let c=0;for(const doc of pdfs){try{if(!doc.fileName)continue;const i=document.createElement('input');i.type='file';i.accept='.pdf';i.style.display='none';const r=await new Promise(res=>{i.onchange=function(){res(this.files&&this.files.length>0?this.files[0]:null);this.remove()};showToast('📂 '+doc.fileName);i.click()});if(!r)continue;const b=await readFileAsBase64(r);const t=await extractTextFromPDF(b);if(t&&t.length>10){doc.fulltext=t;c++}saveData()}catch(e){}}updateUI();updateAllCharts();showToast('✅ '+c+' indiziert!')}
+async function reindexPDFs(){const pdfs=appData.docs.filter(d=>d.type==='PDF'&&(!d.fulltext||d.fulltext.length<10));if(pdfs.length===0){showToast('✅ Alle PDFs indiziert!');return}showToast('⏳ '+pdfs.length+' PDFs...');let c=0;for(const doc of pdfs){try{if(!doc.fileName)continue;const i=document.createElement('input');i.type='file';i.accept='.pdf';i.style.display='none';const r=await new Promise(res=>{i.onchange=function(){res(this.files&&this.files.length>0?this.files[0]:null);this.remove()};showToast('📂 '+doc.fileName);i.click()});if(!r)continue;const b=await readFileAsBase64(r);const t=await extractTextFromPDF(b);if(t&&t.length>10){doc.fulltext=correctOCRText(t);c++}saveData()}catch(e){}}updateUI();updateAllCharts();showToast('✅ '+c+' indiziert!')}
 
 // ========== NAV ==========
 function switchScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.target===id));document.getElementById('mainContent').scrollTop=0;if(id==='search')performSearch();if(id==='cases')renderCases();if(id==='more')renderBudget();if(id==='dashboard')updateAllCharts();updateStats()}
@@ -834,11 +896,11 @@ function updateClock(){const n=new Date();document.getElementById('clockDisplay'
 setInterval(updateClock,30000);updateClock();
 
 // ========== UI ==========
-function updateUI(){updateStats();renderRecent();if(document.getElementById('search').classList.contains('active'))performSearch();if(document.getElementById('cases').classList.contains('active'))renderCases();if(document.getElementById('more').classList.contains('active'))renderBudget();updateAllCharts();updateCloudUI()}
+function updateUI(){updateStats();renderRecent();if(document.getElementById('search').classList.contains('active'))performSearch();if(document.getElementById('cases').classList.contains('active'))renderCases();if(document.getElementById('more').classList.contains('active'))renderBudget();updateAllCharts()}
 
 // ========== INIT ==========
 function initApp(){
-  loadData();loadDarkMode();loadCloudConfig();
+  loadData();loadDarkMode();
   if(appData.docs.length===0){
     appData.docs=[
       {id:1,name:'Amazon Rechnung Smartphone',type:'PDF',icon:'📄',tags:['Rechnung','Amazon','Handy'],amount:'129,99 €',date:'12.08.2026',company:'Amazon',status:'offen',caseName:'Handy',caseId:1,fileName:'',fulltext:'',createdAt:new Date(Date.now()-86400000*2).toISOString()},
@@ -854,11 +916,13 @@ function initApp(){
     appData.nextCaseId=4;
     saveData();
   }
-  updateUI();updateAllCharts();updateCloudUI();
-  console.log('📁 Archiv App mit Multi-Cloud-Sync geladen!');
+  updateUI();updateAllCharts();
+  console.log('📁 Archiv App mit OCR v2 geladen!');
 }
 
-// ========== START ==========
+// Service Worker
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>console.log('✅ SW aktiv')).catch(e=>console.warn('SW:',e))}
+
 loadDarkMode();
 if(isPinSet()){showPinOverlay('unlock')}else{showPinOverlay('setup')}
 </script>
