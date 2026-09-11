@@ -19,8 +19,8 @@ body.dark{--bg:#1a1a2e;--panel:#16213e;--ink:#e2e8f0;--muted:#94a3b8;--line:#2d3
 html{scroll-behavior:smooth}
 body{font-family:-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100svh;display:flex;justify-content:center;align-items:center;padding:0;transition:background .3s,color .3s}
 .phone-shell{max-width:430px;width:100%;height:100svh;min-height:700px;max-height:932px;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(15,23,42,.05),0 24px 80px rgba(15,23,42,.2);transition:background .3s}
-@media(min-width:700px){body{padding:24px}.phone-shell{border-radius:38px;height:95svh;min-height:800px}.bottom-nav,.modal-overlay{border-radius:38px}}
-@media(max-width:440px){body{padding:0}.phone-shell{border-radius:0}.bottom-nav,.modal-overlay{border-radius:0}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:700px){body{padding:24px}.phone-shell{border-radius:38px;height:95svh;min-height:800px}.bottom-nav,.modal-overlay,.ocr-modal-overlay{border-radius:38px}}
+@media(max-width:440px){body{padding:0}.phone-shell{border-radius:0}.bottom-nav,.modal-overlay,.ocr-modal-overlay{border-radius:0}.stats{grid-template-columns:repeat(2,1fr)}}
 .pin-overlay{position:absolute;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;justify-content:center;align-items:center;padding:40px 30px}
 .pin-overlay.show{display:flex}
 .pin-icon{font-size:64px;margin-bottom:16px}
@@ -184,21 +184,18 @@ body.dark .ocr-progress{background:#2d3748}
 .install-banner .install-sub{font-size:11px;opacity:.8}
 .install-banner .install-btn{background:rgba(255,255,255,.2);border:0;color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
 .install-banner .install-close{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;opacity:.6}
-
-/* NEU: Einklappbare OCR-Box */
-.ocr-preview{display:none;margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.ocr-preview.show{display:block}
-.ocr-preview-header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;user-select:none;background:var(--chip)}
-.ocr-preview-header .preview-label{font-size:12px;color:var(--ink);font-weight:600}
-.ocr-preview-header .toggle-icon{font-size:14px;color:var(--muted);transition:transform .2s}
-.ocr-preview.collapsed .toggle-icon{transform:rotate(-90deg)}
-.ocr-preview-content{max-height:0;overflow:hidden;transition:max-height .3s ease}
-.ocr-preview.expanded .ocr-preview-content{max-height:500px;overflow-y:auto}
-.ocr-preview .raw-text{font-size:10px;color:var(--muted);padding:10px 12px;white-space:pre-wrap;text-align:left;font-family:monospace;background:var(--bg)}
 .ocr-quality{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-left:6px}
 .ocr-quality.good{background:var(--green2);color:#14764d}
 .ocr-quality.medium{background:#fff7ed;color:#b45309}
 .ocr-quality.bad{background:#fef2f2;color:#dc2626}
+/* OCR-MODAL */
+.ocr-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:150;display:none;justify-content:center;align-items:center;padding:20px;border-radius:38px}
+.ocr-modal-overlay.open{display:flex}
+.ocr-modal-content{background:var(--panel);border-radius:24px;max-width:100%;max-height:85%;width:100%;max-width:420px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.ocr-modal-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
+.ocr-modal-header h3{font-size:15px;margin:0}
+.ocr-modal-body{flex:1;overflow:auto;padding:14px;background:var(--bg)}
+.ocr-modal-body .raw-text{font-size:11px;color:var(--ink);white-space:pre-wrap;text-align:left;font-family:monospace;padding:12px;background:var(--panel);border-radius:10px;border:1px solid var(--line);word-break:break-word}
 </style>
 </head>
 <body>
@@ -226,7 +223,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.9</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v3.0</div>
   </header>
 
   <main id="mainContent">
@@ -271,7 +268,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v2.9 mit Debug-Ausgabe.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v3.0 mit Debug-Overlay.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -290,21 +287,13 @@ body.dark .ocr-progress{background:#2d3748}
         <div class="edit-field"><label>Tags</label><b id="aTags">—</b></div>
         <div class="edit-field" id="fulltextInfo" style="display:none;border-bottom:0;"><label>📝 Volltext</label><b id="aFulltext" style="font-weight:400;font-size:11px;color:var(--muted);">indiziert</b></div>
 
-        <!-- SPEICHERN-BUTTONS JETZT VOR DER OCR-BOX -->
         <div class="btn-row" style="margin-top:14px;">
           <button class="secondary" onclick="showToast('Daten können bearbeitet werden')" style="font-size:14px;">✏️ Bearbeiten</button>
           <button class="primary" id="saveDocBtn" onclick="saveCurrentDocument()" style="font-size:14px;">💾 Speichern</button>
         </div>
 
-        <!-- Einklappbare OCR-Box -->
-        <div class="ocr-preview collapsed" id="ocrPreview">
-          <div class="ocr-preview-header" onclick="toggleOcrPreview()">
-            <span class="preview-label">🔍 OCR-Rohtext & Debug (klick zum Öffnen)</span>
-            <span class="toggle-icon">▼</span>
-          </div>
-          <div class="ocr-preview-content">
-            <div class="raw-text" id="ocrRawText">Bereit für Upload...</div>
-          </div>
+        <div style="margin-top:10px;text-align:center;">
+          <button class="secondary" onclick="openOcrModal()" style="width:100%;font-size:13px;padding:10px;">🔍 OCR-Rohtext & Debug anzeigen</button>
         </div>
       </div>
       <input type="file" id="fileInput" class="file-input-hidden" multiple accept="*/*" />
@@ -359,8 +348,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v2.9 - Speichern-Button fix</h3>
-          <p class="hint">✅ Speichern-Button ist jetzt <b>VOR</b> der OCR-Box<br>✅ OCR-Box einklappbar (klick zum Öffnen)<br>✅ PDF.js: pdf.getPage() Bug behoben</p>
+          <h3>🎯 OCR v3.0 - OCR-Box als Overlay</h3>
+          <p class="hint">✅ Speichern-Button immer sichtbar<br>✅ OCR-Details in eigenem Fenster<br>✅ Kein Scroll-Problem mehr</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -372,7 +361,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.9 · OCR v2.9</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 11.0 · OCR v3.0</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -394,10 +383,28 @@ body.dark .ocr-progress{background:#2d3748}
   </nav>
 
   <div class="toast" id="toast"></div>
+
+  <!-- Versteckter OCR-Rohtext (für Modal) -->
+  <div id="ocrRawText" style="display:none;">Bereit für Upload...</div>
+
+  <!-- Dokument Modal -->
   <div class="modal-overlay" id="docModal">
     <div class="modal-content">
       <div class="modal-header"><h3 id="modalTitle">📄</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
       <div class="modal-body" id="modalBody"><div class="big-icon">📄</div><div class="file-name">Lade...</div></div>
+    </div>
+  </div>
+
+  <!-- OCR-Modal -->
+  <div class="ocr-modal-overlay" id="ocrModal" onclick="if(event.target===this)closeOcrModal()">
+    <div class="ocr-modal-content">
+      <div class="ocr-modal-header">
+        <h3>🔍 OCR-Rohtext & Debug</h3>
+        <button class="modal-close" onclick="closeOcrModal()">✕</button>
+      </div>
+      <div class="ocr-modal-body">
+        <div class="raw-text" id="ocrModalRawText">Noch keine Analyse durchgeführt...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -409,17 +416,14 @@ let currentFilter='Alle',pendingDoc=null,isProcessing=false,fileCache=null;
 let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear();
 let previewChart=null,dashLineChart=null,dashPieChart=null;
 
-// OCR-Box Toggle
-function toggleOcrPreview(){
-  const el=document.getElementById('ocrPreview');
-  const isCollapsed=el.classList.contains('collapsed');
-  if(isCollapsed){
-    el.classList.remove('collapsed');el.classList.add('expanded');
-    el.querySelector('.preview-label').textContent='🔍 OCR-Rohtext & Debug (klick zum Schließen)';
-  }else{
-    el.classList.remove('expanded');el.classList.add('collapsed');
-    el.querySelector('.preview-label').textContent='🔍 OCR-Rohtext & Debug (klick zum Öffnen)';
-  }
+// OCR-Modal
+function openOcrModal(){
+  const rawContent=document.getElementById('ocrRawText').textContent||'Keine Daten';
+  document.getElementById('ocrModalRawText').textContent=rawContent;
+  document.getElementById('ocrModal').classList.add('open');
+}
+function closeOcrModal(){
+  document.getElementById('ocrModal').classList.remove('open');
 }
 
 let pinEntry=[],pinMode='unlock',pinTemp=[],pinChangeOld=[];
@@ -524,9 +528,6 @@ async function handleFile(file){
   isProcessing=true;document.getElementById('saveDocBtn').disabled=true;
   const s=document.getElementById('ocrStatus'),p=document.getElementById('ocrProgressBar');
   const raw=document.getElementById('ocrRawText');
-  const ocrBox=document.getElementById('ocrPreview');
-  // OCR-Box zeigen + automatisch aufklappen während Verarbeitung
-  ocrBox.classList.add('show');
   s.innerHTML='<span class="spinner"></span> Analysiere '+file.name+'...';p.style.width='10%';
   raw.textContent='🚀 Verarbeitung gestartet für: '+file.name+'\n';
 
@@ -631,17 +632,7 @@ async function handleFile(file){
     document.getElementById('aTags').textContent=ut.join(', ');
     p.style.width='100%';s.innerHTML='✅ Fertig! (Qualität: '+q.label+')';
     raw.textContent+='\n\n=== ZUSAMMENFASSUNG ===\nTyp: '+dt+'\nFirma: '+(company||'—')+'\nDatum: '+(date||'—')+'\nBetrag: '+(amount||'—')+'\nTags: '+ut.join(', ');
-
-    // OCR-Box nach Abschluss automatisch einklappen (damit Speichern-Button sichtbar)
-    ocrBox.classList.remove('expanded');ocrBox.classList.add('collapsed');
-    ocrBox.querySelector('.preview-label').textContent='🔍 OCR-Rohtext & Debug (klick zum Öffnen)';
-
     switchScreen('upload');
-    // Sanft zur Analyse-Box scrollen (nicht ganz nach unten, damit Speichern sichtbar bleibt)
-    setTimeout(()=>{
-      const ab=document.getElementById('analysisBox');
-      if(ab)ab.scrollIntoView({behavior:'smooth',block:'start'});
-    },100);
     showToast('📎 '+file.name+' analysiert · '+q.label);
   }catch(e){
     console.error('HANDLEFILE ERROR:',e);
@@ -840,7 +831,7 @@ function saveCurrentDocument(){
   appData.docs.push(doc);saveData();
   fileCache=null;pendingDoc=null;
   document.getElementById('ocrQualityBadge').innerHTML='';
-  document.getElementById('ocrPreview').classList.remove('show','expanded');document.getElementById('ocrPreview').classList.add('collapsed');
+  closeOcrModal();
   showToast('✅ Gespeichert! ('+appData.docs.length+' Dokumente)');
   switchScreen('home');
 }
@@ -902,7 +893,7 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v2.9 geladen!');
+  console.log('📁 Archiv App mit OCR v3.0 geladen!');
 }
 
 if('serviceWorker' in navigator){
