@@ -219,7 +219,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.7 Debug</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.8</div>
   </header>
 
   <main id="mainContent">
@@ -264,7 +264,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v2.7 mit Debug-Ausgabe.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v2.8 mit Debug-Ausgabe.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -343,8 +343,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v2.7 - Debug</h3>
-          <p class="hint">📄 PDF-Debug jetzt vollständig sichtbar<br>✅ Service Worker deaktiviert (kein Cache mehr)<br>✅ disableWorker für PDF.js (behebt manche Fehler)</p>
+          <h3>🎯 OCR v2.8 - Bug gefixt</h3>
+          <p class="hint">✅ PDF.js: <code>pdf.getPage()</code> statt <code>l.getPage()</code><br>✅ Vollständige Debug-Ausgabe<br>✅ Service Worker deaktiviert</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -356,7 +356,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.7 · OCR v2.7 Debug</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.8 · OCR v2.8</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -523,12 +523,11 @@ async function handleFile(file){
         company=emailData.from||'';
         if(emailData.date){const d=new Date(emailData.date);if(!isNaN(d))date=d.getDate().toString().padStart(2,'0')+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear()}
         if(emailData.body){const a=extractAmount(emailData.body);if(a)amount=a;fulltext=emailData.body}
-        raw.textContent+='✅ E-Mail analysiert\nVon: '+company+'\nDatum: '+date+'\nBetrag: '+amount+'\n';
       }
       fi.style.display='none';
     }
 
-    // ========== PDF ==========
+    // PDF
     if(dt==='PDF'&&!emailData){
       p.style.width='30%';s.innerHTML='<span class="spinner"></span> PDF-Text wird extrahiert...';
       raw.textContent+='\n📄 Starte PDF-Extraktion...\n';
@@ -540,7 +539,7 @@ async function handleFile(file){
         s.innerHTML='📝 '+fulltext.length+' Zeichen extrahiert';
         fi.style.display='flex';
         document.getElementById('aFulltext').textContent='✅ '+fulltext.length+' Zeichen';
-        raw.textContent+='\n=== ✅ ERFOLG: Text extrahiert ===\n'+text.substring(0,1500);
+        raw.textContent+='\n=== ✅ ERFOLG ===\n'+text.substring(0,1500);
       }else{
         fi.style.display='flex';
         document.getElementById('aFulltext').textContent='⚠️ Kein Text';
@@ -552,14 +551,13 @@ async function handleFile(file){
       amount=extractAmount(text)||amount;
       tags.push(...detectTags(text));
     }
-    // ========== BILD ==========
+    // BILD
     else if(dt==='Bild'&&!emailData){
       p.style.width='25%';s.innerHTML='<span class="spinner"></span> Bild vorbereiten...';
-      raw.textContent+='\n🖼️ Starte Bild-Vorverarbeitung...\n';
+      raw.textContent+='\n🖼️ Bild-Vorverarbeitung...\n';
       const preprocessed=await preprocessImage(b64);
-      raw.textContent+='✅ Bild vorbereitet\n';
       p.style.width='40%';s.innerHTML='<span class="spinner"></span> OCR läuft...';
-      raw.textContent+='🔍 Tesseract OCR läuft (kann 10-20 Sek dauern)...\n';
+      raw.textContent+='🔍 Tesseract OCR läuft...\n';
       text=await performOCR(preprocessed);
       text=correctOCRText(text);
       p.style.width='85%';
@@ -629,28 +627,23 @@ async function performOCR(b64){
   }catch(e){console.error('OCR ERROR:',e);return''}
 }
 
-// ========== PDF-EXTRAKTION MIT DEBUG + disableWorker ==========
+// ========== PDF-EXTRAKTION v2.8 - BUG FIX: pdf.getPage statt l.getPage ==========
 async function extractTextFromPDF(b64){
   const raw=document.getElementById('ocrRawText');
-  let dbg='';
   try{
-    dbg+='📄 PDF.js vorhanden: '+(typeof window.pdfjsLib!=='undefined'?'JA':'NEIN')+'\n';
-    if(raw)raw.textContent+=dbg;
-    if(typeof window.pdfjsLib==='undefined'){return''}
+    if(typeof window.pdfjsLib==='undefined'){if(raw)raw.textContent+='❌ PDF.js nicht geladen\n';return''}
     const l=window.pdfjsLib;
     try{l.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}catch(we){}
-    dbg='📄 Base64 Länge: '+b64.length+'\n';
+    if(raw)raw.textContent+='📄 Base64 Länge: '+b64.length+'\n';
     const bin=atob(b64.split(',')[1]);
-    dbg+='📄 Binär-Länge: '+bin.length+' Bytes\n';
     const bytes=new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-    dbg+='📄 Lade PDF (disableWorker:true)...\n';
-    if(raw)raw.textContent+=dbg;
+    if(raw)raw.textContent+='📄 Lade PDF ('+bytes.length+' Bytes)...\n';
     const pdf=await l.getDocument({data:bytes,disableWorker:true}).promise;
     if(raw)raw.textContent+='📄 ✅ PDF geladen: '+pdf.numPages+' Seiten\n';
     let t='';
     for(let i=1;i<=pdf.numPages;i++){
-      const pg=await l.getPage(i);
+      const pg=await pdf.getPage(i);  // ← FIX: pdf statt l!
       const c=await pg.getTextContent();
       if(raw)raw.textContent+='📄 Seite '+i+': '+c.items.length+' Text-Items\n';
       t+=c.items.map(x=>x.str).join(' ')+'\n';
@@ -872,10 +865,9 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v2.7 Debug geladen!');
+  console.log('📁 Archiv App mit OCR v2.8 geladen!');
 }
 
-// Service Worker NICHT mehr registrieren (Cache-Probleme!)
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>{
     regs.forEach(r=>r.unregister());
