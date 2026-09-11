@@ -219,7 +219,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.1</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.2</div>
   </header>
 
   <main id="mainContent">
@@ -264,7 +264,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v2.1 erkennt Betrag, Datum & Firma.<br>✨ Neu: Bessere Firmenerkennung (auch ohne GmbH/AG).</p>
+        <p class="hint">📷 Foto oder PDF → OCR v2.2 erkennt Betrag, Datum & Firma.<br>✨ Neu: Bessere Firmenerkennung auch ohne GmbH/AG.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -343,8 +343,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v2.1 - Verbesserungen</h3>
-          <p class="hint">✅ Bessere Firmenerkennung (auch ohne GmbH/AG)<br>✅ "Von ..." Muster<br>✅ Bild-Vorverarbeitung<br>✅ Fehlerkorrektur & Qualitätsanzeige</p>
+          <h3>🎯 OCR v2.2 - Fix</h3>
+          <p class="hint">✅ Firmenerkennung funktioniert jetzt auch wenn PDF.js alles in EINER Zeile ausgibt<br>✅ "Von ..." wird auch mitten im Text gefunden<br>✅ Stopp-Wörter (Steuer, IBAN, etc.) begrenzen den Namen</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -356,7 +356,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.1 · OCR v2.1</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.2 · OCR v2.2</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -393,7 +393,6 @@ let currentFilter='Alle',pendingDoc=null,isProcessing=false,fileCache=null;
 let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear();
 let previewChart=null,dashLineChart=null,dashPieChart=null;
 
-// PIN
 let pinEntry=[],pinMode='unlock',pinTemp=[],pinChangeOld=[];
 function hashPin(p){let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h=h&h}return'pin_'+Math.abs(h)}
 function getPinHash(){return localStorage.getItem(PIN_HASH_KEY)}
@@ -409,18 +408,15 @@ document.querySelectorAll('.pin-key').forEach(b=>b.addEventListener('click',func
 function changePin(){showPinOverlay(isPinSet()?'change':'setup')}
 function resetPin(){if(confirm('⚠️ PIN zurücksetzen?')){localStorage.removeItem(PIN_HASH_KEY);showToast('🔄 Zurückgesetzt');setTimeout(()=>location.reload(),800)}}
 
-// PWA
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!localStorage.getItem('archiv_install_dismissed'))document.getElementById('installBanner').classList.add('show')});
 document.getElementById('installBtn').addEventListener('click',async()=>{const b=document.getElementById('installBanner');if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;b.classList.remove('show')}else showToast('📱 In Chrome öffnen → Zum Startbildschirm')});
 document.getElementById('installCloseBtn').addEventListener('click',()=>{document.getElementById('installBanner').classList.remove('show');localStorage.setItem('archiv_install_dismissed','true')});
 
-// DARK
 function toggleDarkMode(){document.body.classList.toggle('dark');const d=document.body.classList.contains('dark');localStorage.setItem(DARK_KEY,d?'true':'false');updateDarkUI(d);setTimeout(updateAllCharts,100);showToast(d?'🌙 Dark':'☀️ Light')}
 function updateDarkUI(d){document.getElementById('darkIcon').textContent=d?'☀️':'🌙';document.getElementById('darkLabel').textContent=d?'Light':'Dark';const ci=document.getElementById('darkCardIcon');if(ci)ci.textContent=d?'☀️':'🌙'}
 function loadDarkMode(){if(localStorage.getItem(DARK_KEY)==='true'){document.body.classList.add('dark');updateDarkUI(true)}else updateDarkUI(false)}
 
-// CHARTS
 function getChartColors(){const d=document.body.classList.contains('dark');return{grid:d?'rgba(255,255,255,0.1)':'rgba(20,58,90,0.1)',text:d?'#e2e8f0':'#122033',line:'#1f9d68',fill:d?'rgba(52,211,153,0.15)':'rgba(31,157,104,0.15)',pie:['#1f9d68','#143a5a','#f59e0b','#8b5cf6','#dc2626','#60a5fa','#f472b6','#14b8a6']}}
 function updateAllCharts(){updateDashStats();updatePreviewStats()}
 function getMonthlyData(){const docs=appData.docs,m=[],a=[],now=new Date();for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);m.push((d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear());let t=0;docs.forEach(x=>{if(x.date){const p=x.date.split('.');if(p.length===3&&p[1]===(d.getMonth()+1).toString().padStart(2,'0')&&p[2]===d.getFullYear().toString()){const v=parseFloat((x.amount||'').replace(',','.').replace(/[^0-9.]/g,''));if(!isNaN(v))t+=v}}});a.push(Math.round(t*100)/100)}return{months:m,amounts:a}}
@@ -431,17 +427,14 @@ function updateDashStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>
 function loadData(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)appData=JSON.parse(r)}catch(e){}}
 function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(appData))}catch(e){}updateUI();updateAllCharts()}
 
-// HOME
 function updateStats(){const docs=appData.docs;const inv=docs.filter(d=>d.tags&&d.tags.includes('Rechnung')).length;const war=docs.filter(d=>d.tags&&d.tags.includes('Garantie')).length;const em=docs.filter(d=>d.type==='E-Mail'||(d.tags&&d.tags.includes('E-Mail'))).length;const op=docs.filter(d=>d.status==='offen').length;const idx=docs.filter(d=>d.fulltext&&d.fulltext.length>10).length;const cats=new Set(),months=new Set();docs.forEach(d=>{(d.tags||[]).forEach(t=>{if(['Lebensmittel','Auto','Strom','Internet','Versicherung','Handy','Haushalt','Wohnen','Freizeit','Rechnung','Vertrag'].includes(t))cats.add(t)});if(d.date){const p=d.date.split('.');if(p.length===3)months.add(p[1]+'.'+p[2])}});document.getElementById('statTotal').textContent=docs.length;document.getElementById('statOpen').textContent=op||0;document.getElementById('statInvoices').textContent=inv;document.getElementById('statWarranty').textContent=war;document.getElementById('statEmails').textContent=em;document.getElementById('statCategories').textContent=cats.size||0;document.getElementById('statMonths').textContent=months.size||0;document.getElementById('statIndexed').textContent=idx;document.getElementById('docCount').textContent=docs.length+' Dokumente'}
 function renderRecent(){const list=document.getElementById('recentList');const r=[...appData.docs].sort((a,b)=>b.id-a.id).slice(0,5);if(r.length===0){list.innerHTML='<div class="panel"><p class="hint" style="text-align:center;padding:20px 0">📭 Noch keine Dokumente.</p></div>';return}list.innerHTML=r.map(d=>docCardHTML(d)).join('')}
 function docCardHTML(doc){const tags=doc.tags||[];const th=tags.map((t,i)=>{let c=i===0?'green':'';if(t==='E-Mail')c='email';if(t==='Garantie')c='orange';return'<span class="tag '+c+'">'+t+'</span>'}).join('');const am=doc.amount||'—';const m=doc.date?doc.date+' · ':'';const cn=doc.caseName?'📁 '+doc.caseName:'';const sb=doc.status==='offen'?'<span class="status-badge offen">⏳ zu prüfen</span>':'<span class="status-badge erledigt">✅ geprüft</span>';const hf=doc.fileName?'📎':'';const hi=doc.fulltext&&doc.fulltext.length>10?'<span class="tag indexed">🔍 indiziert</span>':'';const ic=doc.type==='E-Mail'?'email':'';const dn=doc.emailSubject?doc.emailSubject:doc.name;return'<article class="doc-card" onclick="openDocument('+doc.id+')"><div class="file-icon '+ic+'">'+(doc.icon||'📄')+'</div><div><h3>'+dn+' '+hf+'</h3><div class="meta">'+m+(doc.type||'Dokument')+' '+cn+' '+sb+'</div>'+(doc.emailFrom?'<div class="meta" style="font-size:11px;">✉️ '+doc.emailFrom+'</div>':'')+'<div class="tags">'+th+' '+hi+'</div></div><div class="amount">'+am+'</div></article>'}
 
-// SEARCH
 function performSearch(){const q=document.getElementById('searchInput').value.toLowerCase().trim();const filter=currentFilter;let r=appData.docs;if(filter==='offen')r=r.filter(d=>d.status==='offen');else if(filter!=='Alle')r=r.filter(d=>{const t=d.tags||[];return t.includes(filter)||d.type===filter});if(q)r=r.filter(d=>{const s=[d.name,d.type,d.company,d.amount,d.caseName,d.emailSubject,d.emailFrom,d.emailTo,d.emailBody,...(d.tags||[])].join(' ').toLowerCase();const f=d.fulltext?d.fulltext.toLowerCase():'';return s.includes(q)||f.includes(q)});const list=document.getElementById('searchList');list.innerHTML=r.length===0?'<div class="panel"><h3>Keine Treffer</h3></div>':r.map(d=>docCardHTML(d)).join('');document.getElementById('resultCount').textContent=r.length+' Treffer'}
 function setFilter(f){currentFilter=f;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter===f));performSearch()}
 function switchScreenWithFilter(s,f){switchScreen(s);if(s==='search')setFilter(f)}
 
-// OCR v2
 async function preprocessImage(base64){
   return new Promise((resolve)=>{
     const img=new Image();
@@ -495,7 +488,6 @@ function assessOCRQuality(text,amount,date,company){
   return{label:'Schwach',cls:'bad'};
 }
 
-// UPLOAD
 function triggerUpload(accept){if(isProcessing)return;const i=document.getElementById('fileInput');i.accept=accept||'*/*';i.multiple=false;i.onchange=function(){if(this.files&&this.files.length>0)handleFile(this.files[0]);this.value=''};i.click()}
 async function handleFile(file){
   if(isProcessing)return;
@@ -625,34 +617,51 @@ async function extractTextFromPDF(b64){
     const pdf=await l.getDocument({data:bytes}).promise;
     let t='';
     for(let i=1;i<=pdf.numPages;i++){
-      const pg=await pdf.getPage(i);
+      const pg=await l.getPage(i);
       const c=await pg.getTextContent();
-      t+=c.items.map(x=>x.str).join(' ')+'\n';
+      // WICHTIG: Jede Zeile einzeln (nicht alles in einer Zeile)
+      let lastY=null,lineText='';
+      c.items.forEach(item=>{
+        const y=item.transform[5];
+        if(lastY!==null&&Math.abs(y-lastY)>3){t+=lineText.trim()+'\n';lineText=''}
+        lineText+=(item.str||'')+' ';
+        lastY=y;
+      });
+      if(lineText)t+=lineText.trim()+'\n';
     }
     return t;
   }catch(e){return''}
 }
 
-// ========== FIRMENERKENNUNG v2.1 (VERBESSERT) ==========
+// ========== FIRMENERKENNUNG v2.2 (FIX) ==========
 function extractCompany(t){
   if(!t)return'';
   
   // 1. Bekannte Firmen
-  const companies=['Amazon','Google','Apple','Samsung','Vodafone','Telekom','Stadtwerke','Allianz','AXA','HUK','Sparkasse','Volksbank','Rewe','Aldi','Lidl','MediaMarkt','Saturn','IKEA','Zalando','Otto','eBay','PayPal','Netflix','Spotify','Microsoft','Adobe','DHL','Hermes','UPS','FedEx','Deutsche Bahn','Lufthansa','Netto','Penny','Kaufland','Edeka','Rossmann','dm','Tchibo','Deichmann'];
+  const companies=['Amazon','Google','Apple','Samsung','Vodafone','Telekom','Stadtwerke','Allianz','AXA','HUK','Sparkasse','Volksbank','Rewe','Aldi','Lidl','MediaMarkt','Saturn','IKEA','Zalando','Otto','eBay','PayPal','Netflix','Spotify','Microsoft','Adobe','DHL','Hermes','UPS','FedEx','Deutsche Bahn','Lufthansa','Netto','Penny','Kaufland','Edeka','Rossmann','Tchibo','Deichmann'];
   for(const c of companies)if(t.toLowerCase().includes(c.toLowerCase()))return c;
   
-  // 2. NEU: "Von [Firma]" - für Kleinunternehmer ohne Rechtsform
-  const vonMatch=t.match(/(?:^|\n)\s*(?:Von|Absender|Rechnungssteller|Aussteller|Anbieter|Verkäufer|Lieferant)[\s:]+([^\n]{3,80})/i);
-  if(vonMatch){
-    let name=vonMatch[1].trim();
-    name=name.split(/\s+(?:Straße|Str\.|Weg|Platz|Allee|Gasse|Damm|Ring|Ufer)\s/i)[0];
-    name=name.replace(/\s+\d{4,}.*$/,'').trim();
-    const words=name.split(/\s+/).slice(0,4);
-    const result=words.join(' ').replace(/[,\-\.:;]+$/,'').trim();
-    if(result.length>2&&result.length<50)return result;
+  // 2. "Von X" - FUNKTIONIERT AUCH IN EINER ZEILE
+  // Stopp-Wörter die das Ende markieren
+  const stopper='(?:Steuer|IBAN|BIC|USt\\.|MwSt|Telefon|Tel\\.|E-Mail|@|Seite|Rechnung\\s|Datum|Kunden|Bestell|Betreff|Deutschland|Österreich|Schweiz|Herrn|Frau)';
+  const patterns=[
+    new RegExp('(?:^|[\\s,;])(?:Von|Absender|Rechnungssteller|Aussteller|Anbieter|Verkäufer|Lieferant)[\\s:]+([A-ZÄÖÜ][^]{2,120}?)\\s+(?='+stopper+')','i'),
+    new RegExp('(?:^|[\\s,;])(?:Von|Absender|Rechnungssteller|Aussteller|Anbieter|Verkäufer|Lieferant)[\\s:]+([A-ZÄÖÜ][A-Za-zäöüßÄÖÜ\\.\\-\'&\\s]{2,80}?)(?=\\s+\\d{4,}|\\s+Straße|\\s+Str\\.|\\s+Weg|\\s+Platz|\\s+Allee|\\s+Gasse|\\s+Damm|\\s+Ring|\\s+Ufer|$)','i')
+  ];
+  
+  for(const p of patterns){
+    const m=t.match(p);
+    if(m){
+      let name=m[1].trim();
+      name=name.split(/\s+(?:Straße|Str\.|Weg|Platz|Allee|Gasse|Damm|Ring|Ufer)/i)[0];
+      name=name.replace(/\s+\d{4,}.*$/,'').trim();
+      const words=name.split(/\s+/).slice(0,5);
+      const result=words.join(' ').replace(/[,\-\.:;]+$/,'').trim();
+      if(result.length>2&&result.length<80)return result;
+    }
   }
   
-  // 3. Rechtsformen (GmbH, AG, KG, ...)
+  // 3. Rechtsformen
   const rf=t.match(/([A-ZÄÖÜ][A-Za-zäöüßÄÖÜ\.\-']*(?:\s+[A-ZÄÖÜa-zäöüß0-9\.\-&']+){0,4})\s+(GmbH|AG|KG|OHG|UG|mbH|e\.K\.|eG|GbR|Co\.|& Co|KGaA|SE)/);
   if(rf){
     let name=(rf[1]+' '+rf[2]).trim();
@@ -660,7 +669,7 @@ function extractCompany(t){
     if(name.length>3&&name.length<60)return name;
   }
   
-  // 4. Erste sinnvolle Zeile (überspringt Garbage)
+  // 4. Erste sinnvolle Zeile
   const lines=t.split('\n').map(l=>l.trim()).filter(l=>{
     if(l.length<5)return false;
     const letters=l.replace(/[^a-zA-ZäöüßÄÖÜ]/g,'').length;
@@ -669,7 +678,7 @@ function extractCompany(t){
   });
   for(let i=0;i<Math.min(10,lines.length);i++){
     const line=lines[i];
-    if(/^(Rechnung|Bestellung|Datum|Kunden|Bestell|An|Von|Betreff|Nr|Seite|Steuer|IBAN|BIC|USt|MwSt|Preis|Gesamt|Bedingungen|Mit\s|Seite)/i.test(line))continue;
+    if(/^(Rechnung|Bestellung|Datum|Kunden|Bestell|An|Von|Betreff|Nr|Seite|Steuer|IBAN|BIC|USt|MwSt|Preis|Gesamt|Bedingungen|Mit\s)/i.test(line))continue;
     if(/^[A-ZÄÖÜ][a-zäöüß]/.test(line) && line.length>3 && line.length<50 && !/\d{3,}/.test(line)) {
       return line.replace(/[,\-\.:]+$/,'').trim();
     }
@@ -677,7 +686,6 @@ function extractCompany(t){
   return'';
 }
 
-// DATUM
 function extractDate(t){
   if(!t)return'';
   const patterns=[
@@ -701,7 +709,6 @@ function extractDate(t){
   return'';
 }
 
-// BETRAG v2.1
 function extractAmount(t){
   if(!t)return'';
   const keywordGroups=[
@@ -863,7 +870,7 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v2.1 geladen!');
+  console.log('📁 Archiv App mit OCR v2.2 geladen!');
 }
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>console.log('✅ SW aktiv')).catch(e=>console.warn('SW:',e))}
