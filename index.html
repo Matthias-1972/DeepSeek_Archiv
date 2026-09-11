@@ -184,10 +184,17 @@ body.dark .ocr-progress{background:#2d3748}
 .install-banner .install-sub{font-size:11px;opacity:.8}
 .install-banner .install-btn{background:rgba(255,255,255,.2);border:0;color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
 .install-banner .install-close{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;opacity:.6}
-.ocr-preview{display:none;margin-top:12px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+
+/* NEU: Einklappbare OCR-Box */
+.ocr-preview{display:none;margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .ocr-preview.show{display:block}
-.ocr-preview .raw-text{font-size:10px;color:var(--muted);max-height:200px;overflow:auto;white-space:pre-wrap;text-align:left;font-family:monospace;padding:8px;background:var(--bg);border-radius:8px}
-.ocr-preview .preview-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.ocr-preview-header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;user-select:none;background:var(--chip)}
+.ocr-preview-header .preview-label{font-size:12px;color:var(--ink);font-weight:600}
+.ocr-preview-header .toggle-icon{font-size:14px;color:var(--muted);transition:transform .2s}
+.ocr-preview.collapsed .toggle-icon{transform:rotate(-90deg)}
+.ocr-preview-content{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.ocr-preview.expanded .ocr-preview-content{max-height:500px;overflow-y:auto}
+.ocr-preview .raw-text{font-size:10px;color:var(--muted);padding:10px 12px;white-space:pre-wrap;text-align:left;font-family:monospace;background:var(--bg)}
 .ocr-quality{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-left:6px}
 .ocr-quality.good{background:var(--green2);color:#14764d}
 .ocr-quality.medium{background:#fff7ed;color:#b45309}
@@ -219,7 +226,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.8</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.9</div>
   </header>
 
   <main id="mainContent">
@@ -264,7 +271,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v2.8 mit Debug-Ausgabe.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v2.9 mit Debug-Ausgabe.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -282,13 +289,22 @@ body.dark .ocr-progress{background:#2d3748}
         <div class="edit-field"><label>Betrag</label><input id="aAmountInput" placeholder="z.B. 129,99 €" /></div>
         <div class="edit-field"><label>Tags</label><b id="aTags">—</b></div>
         <div class="edit-field" id="fulltextInfo" style="display:none;border-bottom:0;"><label>📝 Volltext</label><b id="aFulltext" style="font-weight:400;font-size:11px;color:var(--muted);">indiziert</b></div>
-        <div class="ocr-preview show" id="ocrPreview">
-          <div class="preview-label">🔍 OCR-Rohtext & Debug</div>
-          <div class="raw-text" id="ocrRawText">Bereit für Upload...</div>
+
+        <!-- SPEICHERN-BUTTONS JETZT VOR DER OCR-BOX -->
+        <div class="btn-row" style="margin-top:14px;">
+          <button class="secondary" onclick="showToast('Daten können bearbeitet werden')" style="font-size:14px;">✏️ Bearbeiten</button>
+          <button class="primary" id="saveDocBtn" onclick="saveCurrentDocument()" style="font-size:14px;">💾 Speichern</button>
         </div>
-        <div class="btn-row">
-          <button class="secondary" onclick="showToast('Daten können bearbeitet werden')">✏️</button>
-          <button class="primary" id="saveDocBtn" onclick="saveCurrentDocument()">💾 Speichern</button>
+
+        <!-- Einklappbare OCR-Box -->
+        <div class="ocr-preview collapsed" id="ocrPreview">
+          <div class="ocr-preview-header" onclick="toggleOcrPreview()">
+            <span class="preview-label">🔍 OCR-Rohtext & Debug (klick zum Öffnen)</span>
+            <span class="toggle-icon">▼</span>
+          </div>
+          <div class="ocr-preview-content">
+            <div class="raw-text" id="ocrRawText">Bereit für Upload...</div>
+          </div>
         </div>
       </div>
       <input type="file" id="fileInput" class="file-input-hidden" multiple accept="*/*" />
@@ -343,8 +359,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v2.8 - Bug gefixt</h3>
-          <p class="hint">✅ PDF.js: <code>pdf.getPage()</code> statt <code>l.getPage()</code><br>✅ Vollständige Debug-Ausgabe<br>✅ Service Worker deaktiviert</p>
+          <h3>🎯 OCR v2.9 - Speichern-Button fix</h3>
+          <p class="hint">✅ Speichern-Button ist jetzt <b>VOR</b> der OCR-Box<br>✅ OCR-Box einklappbar (klick zum Öffnen)<br>✅ PDF.js: pdf.getPage() Bug behoben</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -356,7 +372,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.8 · OCR v2.8</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.9 · OCR v2.9</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -393,6 +409,19 @@ let currentFilter='Alle',pendingDoc=null,isProcessing=false,fileCache=null;
 let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear();
 let previewChart=null,dashLineChart=null,dashPieChart=null;
 
+// OCR-Box Toggle
+function toggleOcrPreview(){
+  const el=document.getElementById('ocrPreview');
+  const isCollapsed=el.classList.contains('collapsed');
+  if(isCollapsed){
+    el.classList.remove('collapsed');el.classList.add('expanded');
+    el.querySelector('.preview-label').textContent='🔍 OCR-Rohtext & Debug (klick zum Schließen)';
+  }else{
+    el.classList.remove('expanded');el.classList.add('collapsed');
+    el.querySelector('.preview-label').textContent='🔍 OCR-Rohtext & Debug (klick zum Öffnen)';
+  }
+}
+
 let pinEntry=[],pinMode='unlock',pinTemp=[],pinChangeOld=[];
 function hashPin(p){let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h=h&h}return'pin_'+Math.abs(h)}
 function getPinHash(){return localStorage.getItem(PIN_HASH_KEY)}
@@ -425,7 +454,7 @@ function updatePreviewStats(){const docs=appData.docs;const tot=docs.reduce((s,d
 function updateDashStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);const cnt=docs.filter(d=>d.amount&&parseFloat(d.amount.replace(',','.').replace(/[^0-9.]/g,''))>0).length;const avg=cnt>0?tot/cnt:0;document.getElementById('dashTotal').textContent=tot.toFixed(2)+' €';document.getElementById('dashAvg').textContent=avg.toFixed(2)+' €';document.getElementById('dashCount').textContent=cnt;const ctxL=document.getElementById('dashLineChart').getContext('2d');if(dashLineChart)dashLineChart.destroy();const dt=getMonthlyData(),c=getChartColors();dashLineChart=new Chart(ctxL,{type:'line',data:{labels:dt.months,datasets:[{data:dt.amounts,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:c.line,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.parsed.y.toFixed(2)+' €'}}},scales:{y:{grid:{color:c.grid},ticks:{color:c.text,font:{size:10},callback:v=>v+' €'},beginAtZero:true},x:{grid:{display:false},ticks:{color:c.text,font:{size:10}}}}}});const ctxP=document.getElementById('dashPieChart').getContext('2d');if(dashPieChart)dashPieChart.destroy();const catData=getCategoryData(),pc=getChartColors().pie;if(catData.length===0){dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels:['Keine Daten'],datasets:[{data:[1],backgroundColor:[c.grid],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:c.text,font:{size:10}}},tooltip:{enabled:false}}}});return}const labels=catData.map(x=>x[0]),vals=catData.map(x=>x[1]);dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:labels.map((_,i)=>pc[i%pc.length]),borderWidth:2,borderColor:document.body.classList.contains('dark')?'#1a1a2e':'#f5f4ee'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:getChartColors().text,font:{size:10},padding:10,boxWidth:12}},tooltip:{callbacks:{label:x=>{const t=x.dataset.data.reduce((a,b)=>a+b,0);return x.label+': '+x.parsed.toFixed(2)+' € ('+((x.parsed/t)*100).toFixed(1)+'%)'}}}},onClick:function(e,el){if(el.length>0){const l=this.data.labels[el[0].index];switchScreenWithFilter('search',l)}}}})}
 
 function loadData(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)appData=JSON.parse(r)}catch(e){}}
-function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(appData))}catch(e){}updateUI();updateAllCharts()}
+function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(appData))}catch(e){console.warn('Save error',e);showToast('⚠️ Speicher voll? '+e.message)}updateUI();updateAllCharts()}
 
 function updateStats(){const docs=appData.docs;const inv=docs.filter(d=>d.tags&&d.tags.includes('Rechnung')).length;const war=docs.filter(d=>d.tags&&d.tags.includes('Garantie')).length;const em=docs.filter(d=>d.type==='E-Mail'||(d.tags&&d.tags.includes('E-Mail'))).length;const op=docs.filter(d=>d.status==='offen').length;const idx=docs.filter(d=>d.fulltext&&d.fulltext.length>10).length;const cats=new Set(),months=new Set();docs.forEach(d=>{(d.tags||[]).forEach(t=>{if(['Lebensmittel','Auto','Strom','Internet','Versicherung','Handy','Haushalt','Wohnen','Freizeit','Rechnung','Vertrag'].includes(t))cats.add(t)});if(d.date){const p=d.date.split('.');if(p.length===3)months.add(p[1]+'.'+p[2])}});document.getElementById('statTotal').textContent=docs.length;document.getElementById('statOpen').textContent=op||0;document.getElementById('statInvoices').textContent=inv;document.getElementById('statWarranty').textContent=war;document.getElementById('statEmails').textContent=em;document.getElementById('statCategories').textContent=cats.size||0;document.getElementById('statMonths').textContent=months.size||0;document.getElementById('statIndexed').textContent=idx;document.getElementById('docCount').textContent=docs.length+' Dokumente'}
 function renderRecent(){const list=document.getElementById('recentList');const r=[...appData.docs].sort((a,b)=>b.id-a.id).slice(0,5);if(r.length===0){list.innerHTML='<div class="panel"><p class="hint" style="text-align:center;padding:20px 0">📭 Noch keine Dokumente.</p></div>';return}list.innerHTML=r.map(d=>docCardHTML(d)).join('')}
@@ -495,8 +524,10 @@ async function handleFile(file){
   isProcessing=true;document.getElementById('saveDocBtn').disabled=true;
   const s=document.getElementById('ocrStatus'),p=document.getElementById('ocrProgressBar');
   const raw=document.getElementById('ocrRawText');
+  const ocrBox=document.getElementById('ocrPreview');
+  // OCR-Box zeigen + automatisch aufklappen während Verarbeitung
+  ocrBox.classList.add('show');
   s.innerHTML='<span class="spinner"></span> Analysiere '+file.name+'...';p.style.width='10%';
-  document.getElementById('ocrPreview').classList.add('show');
   raw.textContent='🚀 Verarbeitung gestartet für: '+file.name+'\n';
 
   try{
@@ -527,7 +558,6 @@ async function handleFile(file){
       fi.style.display='none';
     }
 
-    // PDF
     if(dt==='PDF'&&!emailData){
       p.style.width='30%';s.innerHTML='<span class="spinner"></span> PDF-Text wird extrahiert...';
       raw.textContent+='\n📄 Starte PDF-Extraktion...\n';
@@ -551,7 +581,6 @@ async function handleFile(file){
       amount=extractAmount(text)||amount;
       tags.push(...detectTags(text));
     }
-    // BILD
     else if(dt==='Bild'&&!emailData){
       p.style.width='25%';s.innerHTML='<span class="spinner"></span> Bild vorbereiten...';
       raw.textContent+='\n🖼️ Bild-Vorverarbeitung...\n';
@@ -602,8 +631,17 @@ async function handleFile(file){
     document.getElementById('aTags').textContent=ut.join(', ');
     p.style.width='100%';s.innerHTML='✅ Fertig! (Qualität: '+q.label+')';
     raw.textContent+='\n\n=== ZUSAMMENFASSUNG ===\nTyp: '+dt+'\nFirma: '+(company||'—')+'\nDatum: '+(date||'—')+'\nBetrag: '+(amount||'—')+'\nTags: '+ut.join(', ');
+
+    // OCR-Box nach Abschluss automatisch einklappen (damit Speichern-Button sichtbar)
+    ocrBox.classList.remove('expanded');ocrBox.classList.add('collapsed');
+    ocrBox.querySelector('.preview-label').textContent='🔍 OCR-Rohtext & Debug (klick zum Öffnen)';
+
     switchScreen('upload');
-    document.getElementById('analysisBox').scrollIntoView({behavior:'smooth',block:'center'});
+    // Sanft zur Analyse-Box scrollen (nicht ganz nach unten, damit Speichern sichtbar bleibt)
+    setTimeout(()=>{
+      const ab=document.getElementById('analysisBox');
+      if(ab)ab.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
     showToast('📎 '+file.name+' analysiert · '+q.label);
   }catch(e){
     console.error('HANDLEFILE ERROR:',e);
@@ -627,7 +665,6 @@ async function performOCR(b64){
   }catch(e){console.error('OCR ERROR:',e);return''}
 }
 
-// ========== PDF-EXTRAKTION v2.8 - BUG FIX: pdf.getPage statt l.getPage ==========
 async function extractTextFromPDF(b64){
   const raw=document.getElementById('ocrRawText');
   try{
@@ -643,7 +680,7 @@ async function extractTextFromPDF(b64){
     if(raw)raw.textContent+='📄 ✅ PDF geladen: '+pdf.numPages+' Seiten\n';
     let t='';
     for(let i=1;i<=pdf.numPages;i++){
-      const pg=await pdf.getPage(i);  // ← FIX: pdf statt l!
+      const pg=await pdf.getPage(i);
       const c=await pg.getTextContent();
       if(raw)raw.textContent+='📄 Seite '+i+': '+c.items.length+' Text-Items\n';
       t+=c.items.map(x=>x.str).join(' ')+'\n';
@@ -803,8 +840,8 @@ function saveCurrentDocument(){
   appData.docs.push(doc);saveData();
   fileCache=null;pendingDoc=null;
   document.getElementById('ocrQualityBadge').innerHTML='';
-  document.getElementById('ocrPreview').classList.remove('show');
-  showToast('✅ Gespeichert!');
+  document.getElementById('ocrPreview').classList.remove('show','expanded');document.getElementById('ocrPreview').classList.add('collapsed');
+  showToast('✅ Gespeichert! ('+appData.docs.length+' Dokumente)');
   switchScreen('home');
 }
 
@@ -865,7 +902,7 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v2.8 geladen!');
+  console.log('📁 Archiv App mit OCR v2.9 geladen!');
 }
 
 if('serviceWorker' in navigator){
