@@ -188,7 +188,6 @@ body.dark .ocr-progress{background:#2d3748}
 .ocr-quality.good{background:var(--green2);color:#14764d}
 .ocr-quality.medium{background:#fff7ed;color:#b45309}
 .ocr-quality.bad{background:#fef2f2;color:#dc2626}
-/* OCR-MODAL */
 .ocr-modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:150;display:none;justify-content:center;align-items:center;padding:20px;border-radius:38px}
 .ocr-modal-overlay.open{display:flex}
 .ocr-modal-content{background:var(--panel);border-radius:24px;max-width:100%;max-height:85%;width:100%;max-width:420px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.5)}
@@ -196,6 +195,9 @@ body.dark .ocr-progress{background:#2d3748}
 .ocr-modal-header h3{font-size:15px;margin:0}
 .ocr-modal-body{flex:1;overflow:auto;padding:14px;background:var(--bg)}
 .ocr-modal-body .raw-text{font-size:11px;color:var(--ink);white-space:pre-wrap;text-align:left;font-family:monospace;padding:12px;background:var(--panel);border-radius:10px;border:1px solid var(--line);word-break:break-word}
+/* Speicher-Bereich mit extra Abstand nach unten */
+.save-area{background:var(--panel);border:2px solid var(--green);border-radius:18px;padding:12px;margin:14px 0 18px}
+.save-area .save-label{font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px;font-weight:600}
 </style>
 </head>
 <body>
@@ -223,7 +225,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v3.0</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v3.1</div>
   </header>
 
   <main id="mainContent">
@@ -268,7 +270,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v3.0 mit Debug-Overlay.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v3.1 mit Speichern-Button direkt unter den Daten.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -284,13 +286,18 @@ body.dark .ocr-progress{background:#2d3748}
         <div class="edit-field"><label>Firma</label><input id="aCompanyInput" placeholder="Automatisch" /></div>
         <div class="edit-field"><label>Datum</label><input id="aDateInput" placeholder="TT.MM.JJJJ" /></div>
         <div class="edit-field"><label>Betrag</label><input id="aAmountInput" placeholder="z.B. 129,99 €" /></div>
+
+        <!-- SPEICHERN-BEREICH direkt nach Betrag -->
+        <div class="save-area">
+          <div class="save-label">👇 Beleg jetzt speichern</div>
+          <div class="btn-row" style="margin-top:0;">
+            <button class="secondary" onclick="showToast('Daten können bearbeitet werden')" style="font-size:14px;">✏️ Bearbeiten</button>
+            <button class="primary" id="saveDocBtn" onclick="saveCurrentDocument()" style="font-size:14px;">💾 Speichern</button>
+          </div>
+        </div>
+
         <div class="edit-field"><label>Tags</label><b id="aTags">—</b></div>
         <div class="edit-field" id="fulltextInfo" style="display:none;border-bottom:0;"><label>📝 Volltext</label><b id="aFulltext" style="font-weight:400;font-size:11px;color:var(--muted);">indiziert</b></div>
-
-        <div class="btn-row" style="margin-top:14px;">
-          <button class="secondary" onclick="showToast('Daten können bearbeitet werden')" style="font-size:14px;">✏️ Bearbeiten</button>
-          <button class="primary" id="saveDocBtn" onclick="saveCurrentDocument()" style="font-size:14px;">💾 Speichern</button>
-        </div>
 
         <div style="margin-top:10px;text-align:center;">
           <button class="secondary" onclick="openOcrModal()" style="width:100%;font-size:13px;padding:10px;">🔍 OCR-Rohtext & Debug anzeigen</button>
@@ -348,8 +355,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v3.0 - OCR-Box als Overlay</h3>
-          <p class="hint">✅ Speichern-Button immer sichtbar<br>✅ OCR-Details in eigenem Fenster<br>✅ Kein Scroll-Problem mehr</p>
+          <h3>🎯 OCR v3.1</h3>
+          <p class="hint">✅ Speichern-Bereich direkt nach Betrag<br>✅ Deutlich hervorgehoben (grüner Rahmen)<br>✅ OCR-Details in eigenem Fenster<br>✅ Kein Überlappen mit Navigation</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -361,7 +368,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 11.0 · OCR v3.0</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 11.1 · OCR v3.1</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -384,7 +391,7 @@ body.dark .ocr-progress{background:#2d3748}
 
   <div class="toast" id="toast"></div>
 
-  <!-- Versteckter OCR-Rohtext (für Modal) -->
+  <!-- Versteckter OCR-Rohtext -->
   <div id="ocrRawText" style="display:none;">Bereit für Upload...</div>
 
   <!-- Dokument Modal -->
@@ -416,15 +423,12 @@ let currentFilter='Alle',pendingDoc=null,isProcessing=false,fileCache=null;
 let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear();
 let previewChart=null,dashLineChart=null,dashPieChart=null;
 
-// OCR-Modal
 function openOcrModal(){
   const rawContent=document.getElementById('ocrRawText').textContent||'Keine Daten';
   document.getElementById('ocrModalRawText').textContent=rawContent;
   document.getElementById('ocrModal').classList.add('open');
 }
-function closeOcrModal(){
-  document.getElementById('ocrModal').classList.remove('open');
-}
+function closeOcrModal(){document.getElementById('ocrModal').classList.remove('open')}
 
 let pinEntry=[],pinMode='unlock',pinTemp=[],pinChangeOld=[];
 function hashPin(p){let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h=h&h}return'pin_'+Math.abs(h)}
@@ -893,7 +897,7 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v3.0 geladen!');
+  console.log('📁 Archiv App mit OCR v3.1 geladen!');
 }
 
 if('serviceWorker' in navigator){
