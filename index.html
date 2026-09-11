@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#143a5a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon-192.png" />
+<title>📁 Mein Archiv</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f5f4ee;--panel:#fff;--ink:#122033;--muted:#64748b;--line:#e4e0d5;--blue:#143a5a;--green:#1f9d68;--green2:#e7f7ef;--chip:#eef4f8;--shadow:0 18px 42px rgba(31,41,55,.14);--bottom:84px;--red:#dc2626;--orange:#f59e0b;--purple:#8b5cf6;--top-bg:linear-gradient(135deg,#143a5a,#1e5b7c);--top-text:#fff;--top-sub:#dceef7;--cloud-blue:#4285f4}
+body.dark{--bg:#1a1a2e;--panel:#16213e;--ink:#e2e8f0;--muted:#94a3b8;--line:#2d3748;--blue:#60a5fa;--green:#34d399;--green2:#1a3a2a;--chip:#2d3748;--red:#f87171;--orange:#fbbf24;--purple:#a78bfa;--top-bg:linear-gradient(135deg,#0f172a,#1e293b);--top-text:#e2e8f0;--top-sub:#94a3b8}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,system-ui,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100svh;display:flex;justify-content:center;align-items:center;padding:0;transition:background .3s,color .3s}
+.phone-shell{max-width:430px;width:100%;height:100svh;min-height:700px;max-height:932px;background:var(--bg);border-radius:0;position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(15,23,42,.05),0 24px 80px rgba(15,23,42,.2);display:flex;flex-direction:column;transition:background .3s}
+@media(min-width:700px){body{padding:24px}.phone-shell{border-radius:38px;height:95svh;min-height:800px;max-height:932px}.bottom-nav{border-bottom-left-radius:38px;border-bottom-right-radius:38px}.modal-overlay{border-radius:38px}}
+@media(max-width:440px){body{padding:0}.phone-shell{border-radius:0;height:100svh;max-height:100svh;min-height:100svh}.bottom-nav{border-radius:0}.modal-overlay{border-radius:0}.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* PIN */
+.pin-overlay{position:absolute;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;justify-content:center;align-items:center;padding:40px 30px}
+.pin-overlay.show{display:flex}
+.pin-icon{font-size:64px;margin-bottom:16px}
+.pin-title{font-size:22px;font-weight:800;color:var(--ink);margin-bottom:8px}
+.pin-sub{font-size:14px;color:var(--muted);margin-bottom:24px;text-align:center}
+.pin-dots{display:flex;gap:16px;margin-bottom:24px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:var(--panel)}
+.pin-dot.filled{background:var(--blue);border-color:var(--blue)}
+.pin-error{color:var(--red);font-size:13px;min-height:24px;margin-bottom:12px}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:280px;width:100%}
+.pin-key{padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);font-size:24px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center}
+.pin-key:active{transform:scale(.94);background:var(--chip)}
+.pin-key.empty{background:transparent;border-color:transparent}
+.pin-setup-hint{font-size:12px;color:var(--muted);margin-top:16px;text-align:center}
+
+.top{background:var(--top-bg);color:var(--top-text);padding:18px 18px 22px;border-bottom-left-radius:28px;border-bottom-right-radius:28px;flex-shrink:0;position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;right:-45px;top:-30px;width:150px;height:150px;border-radius:999px;background:rgba(255,255,255,.08)}
+.status{display:flex;justify-content:space-between;font-size:12px;opacity:.86;margin-bottom:14px}
+.brand{display:flex;gap:12px;align-items:center;position:relative;z-index:2;flex-wrap:wrap}
+.logo{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:25px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);flex-shrink:0}
+h1{font-size:24px;line-height:1.05;margin:0}
+.subtitle{font-size:13px;margin:3px 0 0;color:var(--top-sub)}
+.sync-pill{margin-top:12px;display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.17);border-radius:999px;padding:6px 12px;font-size:11px;color:#e9f6fb;position:relative;z-index:2}
+.dark-toggle{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.17);border-radius:999px;padding:4px 10px;font-size:12px;color:#e9f6fb;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;margin-left:auto;flex-shrink:0}
+main{flex:1;overflow-y:auto;padding:12px 14px calc(var(--bottom) + 16px);-webkit-overflow-scrolling:touch}
+.screen{display:none;animation:fade .2s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.search-card{margin-top:-27px;background:var(--panel);border-radius:22px;padding:10px 12px;box-shadow:var(--shadow);border:1px solid rgba(15,23,42,.05);display:flex;gap:9px;align-items:center;cursor:pointer}
+.search-card input{border:0;outline:0;font-size:15px;flex:1;color:var(--ink);background:transparent;width:100%}
+.search-icon{width:38px;height:38px;border-radius:14px;background:#eff6ff;display:grid;place-items:center;color:#2563eb;font-size:18px;flex-shrink:0}
+.quick{display:grid;grid-template-columns:1.15fr .85fr;gap:11px;margin:14px 0}
+.big-action,.small-action{border:0;border-radius:24px;padding:16px;color:#fff;text-align:left;min-height:120px;background:linear-gradient(135deg,var(--green),#16a085);box-shadow:0 14px 28px rgba(31,157,104,.25);cursor:pointer;font-family:inherit}
+.big-action strong,.small-action strong{display:block;font-size:18px;margin-top:18px}
+.big-action span,.small-action span{font-size:13px;opacity:.92}
+.small-stack{display:grid;gap:10px}
+.small-action{min-height:55px;border-radius:19px;padding:12px;background:var(--panel);color:var(--ink);box-shadow:0 10px 22px rgba(15,23,42,.08)}
+.small-action strong{font-size:14px;margin:0}
+.small-action span{font-size:11px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px 8px;text-align:center;cursor:pointer}
+.stat b{font-size:20px;display:block;color:var(--ink)}
+.stat span{display:block;color:var(--muted);font-size:10px;margin-top:1px}
+.stat .icon{font-size:18px;display:block;margin-bottom:2px}
+.stat.green{border-color:var(--green);background:var(--green2)}
+.stat.orange{border-color:var(--orange);background:#fff7ed}
+.stat.blue{border-color:var(--blue);background:#eff6ff}
+.stat.red{border-color:var(--red);background:#fef2f2}
+.stat.purple{border-color:var(--purple);background:#f5f3ff}
+.section-title{display:flex;align-items:end;justify-content:space-between;margin:17px 2px 10px}
+.section-title h2{font-size:17px;margin:0}
+.section-title a{font-size:12px;color:var(--blue);text-decoration:none;font-weight:700;cursor:pointer}
+.list{display:grid;gap:10px}
+.doc-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:13px;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:start;cursor:pointer}
+.doc-card .status-badge{font-size:9px;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--muted);display:inline-block;margin-top:4px}
+.doc-card .status-badge.offen{background:#fef2f2;color:#dc2626}
+.doc-card .status-badge.erledigt{background:var(--green2);color:#14764d}
+.file-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:21px;background:#eff6ff;flex-shrink:0}
+.file-icon.email{background:#fef3c7}
+.doc-card h3{margin:0 0 4px;font-size:15px}
+.meta{font-size:12px;color:var(--muted);line-height:1.35}
+.amount{font-weight:800;color:var(--blue);font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tag{font-size:10px;background:var(--chip);border-radius:999px;padding:3px 8px;color:#35536b}
+.tag.green{background:var(--green2);color:#14764d}
+.tag.orange{background:#fff7ed;color:#b45309}
+.tag.email{background:#fef3c7;color:#b45309}
+.tag.indexed{background:#dbeafe;color:#1e40af}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:3px 1px 11px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 14px;font-size:13px;color:var(--ink);cursor:pointer;font-family:inherit}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:15px;margin-bottom:13px}
+.panel h2,.panel h3{margin:0 0 10px}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.upload-tile{border:1px dashed #b7c7d4;background:#f8fbfd;border-radius:22px;min-height:115px;padding:14px;text-align:left;cursor:pointer;font-family:inherit;width:100%}
+body.dark .upload-tile{background:#1a1a2e;border-color:#4a5568}
+.upload-tile .ico{font-size:29px}
+.upload-tile strong{display:block;margin-top:11px;font-size:14px}
+.upload-tile span{font-size:12px;color:var(--muted)}
+.analysis{border-radius:22px;background:linear-gradient(135deg,#ecfdf5,#f0fdfa);border:1px solid #bbf7d0;padding:14px}
+body.dark .analysis{background:linear-gradient(135deg,#0f2a1a,#1a3a2a);border-color:#2d6b4a}
+.ocr-status{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #ddd;border-top:2px solid var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.primary{border:0;border-radius:16px;background:var(--green);color:#fff;font-weight:800;padding:13px 15px;cursor:pointer;font-family:inherit}
+.primary:disabled{opacity:.4;pointer-events:none}
+.secondary{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--blue);font-weight:800;padding:13px 15px;cursor:pointer;font-family:inherit}
+.btn-row{display:flex;gap:9px;margin-top:12px}
+.btn-row button{flex:1}
+.case-card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:15px;display:flex;gap:13px;margin-bottom:10px;cursor:pointer}
+.case-icon{width:50px;height:50px;border-radius:18px;background:#eef2ff;display:grid;place-items:center;font-size:24px;flex-shrink:0}
+.progress{height:8px;background:#eef2f7;border-radius:999px;margin-top:10px;overflow:hidden}
+body.dark .progress{background:#2d3748}
+.progress i{display:block;height:100%;background:var(--green);border-radius:inherit}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tab{padding:10px;border-radius:999px;border:1px solid var(--line);text-align:center;background:var(--panel);font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink)}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.budget{background:linear-gradient(135deg,#1e3a5f,#0f766e);color:#fff;border-radius:28px;padding:18px;box-shadow:var(--shadow)}
+.budget .sum{font-size:31px;font-weight:900;margin:8px 0}
+.budget .month-nav{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.budget .month-nav button{background:rgba(255,255,255,.15);border:0;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;font-family:inherit}
+.budget .month-nav span{font-size:16px;font-weight:600}
+.bar{height:10px;background:rgba(255,255,255,.2);border-radius:999px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:#86efac;border-radius:inherit}
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.more-card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:16px;min-height:94px;cursor:pointer}
+.more-card .ico{font-size:25px}
+.more-card strong{display:block;margin-top:8px;font-size:14px}
+.more-card .hint{font-size:11px;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted);line-height:1.45}
+.bottom-nav{position:absolute;left:0;right:0;bottom:0;width:100%;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-top:1px solid rgba(15,23,42,.08);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 7px calc(6px + env(safe-area-inset-bottom));z-index:5;border-bottom-left-radius:38px;border-bottom-right-radius:38px}
+body.dark .bottom-nav{background:rgba(22,33,62,.95);border-top-color:rgba(255,255,255,.05)}
+.nav-btn{border:0;background:transparent;color:var(--muted);border-radius:17px;padding:4px 2px;font-size:10px;display:grid;gap:1px;place-items:center;cursor:pointer;font-family:inherit}
+.nav-btn .nicon{font-size:21px;line-height:1}
+.nav-btn.active{background:#eaf3f7;color:var(--blue);font-weight:800}
+body.dark .nav-btn.active{background:#2d3748}
+.fab{background:var(--green);color:#fff;width:50px;height:50px;border-radius:20px;box-shadow:0 14px 24px rgba(31,157,104,.35);display:grid;place-items:center;font-size:28px;margin-top:-22px}
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);width:calc(100% - 24px);max-width:390px;background:#102033;color:#fff;border-radius:18px;padding:12px 14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:all .25s;z-index:9;font-size:14px;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.file-input-hidden{display:none}
+.analysis .edit-field{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(20,58,90,.08)}
+.analysis .edit-field label{color:var(--muted);font-size:13px}
+.analysis .edit-field input{border:0;border-bottom:1px dashed #b7c7d4;background:transparent;text-align:right;color:var(--ink);font-size:13px;font-weight:600;padding:2px 4px;width:55%;outline:0;font-family:inherit}
+.ocr-progress{background:#eef2f7;border-radius:999px;height:4px;margin:8px 0;overflow:hidden}
+body.dark .ocr-progress{background:#2d3748}
+.ocr-progress i{display:block;height:100%;width:0%;background:var(--green);border-radius:inherit;transition:width .3s}
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:100;display:none;justify-content:center;align-items:center;padding:20px;border-radius:38px}
+.modal-overlay.open{display:flex}
+.modal-content{background:var(--panel);border-radius:28px;max-width:100%;max-height:90%;width:100%;max-width:400px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
+.modal-header h3{font-size:16px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
+.modal-close{background:var(--chip);border:0;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:grid;place-items:center;color:var(--ink)}
+.modal-body{flex:1;overflow:auto;padding:24px 20px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:200px}
+.modal-body .big-icon{font-size:64px;margin-bottom:16px}
+.modal-body .file-name{font-size:16px;font-weight:700;color:var(--ink);word-break:break-all;margin-bottom:8px}
+.modal-body .file-info{font-size:13px;color:var(--muted);margin-bottom:20px}
+.modal-body .download-btn{display:inline-block;padding:14px 32px;background:var(--green);color:#fff;border-radius:999px;font-weight:700;border:0;cursor:pointer;font-family:inherit;font-size:16px;width:100%;max-width:280px}
+.modal-body .secondary-btn{display:inline-block;padding:12px 24px;background:var(--chip);color:var(--ink);border-radius:999px;font-weight:600;border:0;cursor:pointer;font-family:inherit;font-size:14px;margin-top:10px}
+.modal-body .status-toggle{display:flex;gap:10px;margin:12px 0}
+.modal-body .status-toggle button{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-family:inherit;font-size:13px;color:var(--ink)}
+.modal-body .status-toggle button.active{background:var(--green);color:#fff;border-color:var(--green)}
+.modal-body .status-toggle button.offen-btn.active{background:var(--red);border-color:var(--red);color:#fff}
+.modal-body .email-preview{background:var(--panel);padding:16px;border-radius:16px;text-align:left;width:100%;max-height:300px;overflow:auto;font-family:monospace;font-size:13px;white-space:pre-wrap;word-break:break-all;border:1px solid var(--line);color:var(--ink)}
+.modal-body .category-list{width:100%;text-align:left}
+.modal-body .category-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink)}
+.modal-body .category-item:last-child{border-bottom:0}
+.modal-body .category-item .cat-name{font-weight:600}
+.modal-body .category-item .cat-amount{color:var(--blue);font-weight:700}
+.modal-body .category-item .cat-count{color:var(--muted);font-size:12px}
+.modal-body .email-meta{width:100%;text-align:left;font-size:13px;margin-bottom:12px;padding:12px;background:var(--panel);border-radius:12px;border:1px solid var(--line);color:var(--ink)}
+.modal-body .email-meta div{padding:4px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.modal-body .email-meta div:last-child{border-bottom:0}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.dashboard-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 10px;text-align:center}
+.dashboard-card .value{font-size:22px;font-weight:800;color:var(--ink)}
+.dashboard-card .label{font-size:10px;color:var(--muted);margin-top:2px}
+.dashboard-card .icon{font-size:20px;display:block;margin-bottom:2px}
+.dashboard-card.green .value{color:var(--green)}
+.dashboard-card.blue .value{color:var(--blue)}
+.dashboard-card.orange .value{color:var(--orange)}
+.chart-container{position:relative;height:180px;margin:8px 0 16px}
+.chart-container.pie{height:200px}
+.chart-container canvas{width:100%!important;height:100%!important}
+.install-banner{display:none;background:var(--blue);color:#fff;padding:12px 16px;border-radius:16px;margin-bottom:12px;align-items:center;justify-content:space-between;gap:12px}
+.install-banner.show{display:flex}
+.install-banner .install-text{font-size:13px;font-weight:600}
+.install-banner .install-sub{font-size:11px;opacity:.8}
+.install-banner .install-btn{background:rgba(255,255,255,.2);border:0;color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+.install-banner .install-close{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;opacity:.6}
+
+/* CLOUD */
+.cloud-section{padding:14px;border-radius:20px;border:2px solid var(--cloud-blue);background:linear-gradient(135deg,rgba(66,133,244,.08),rgba(66,133,244,.03));margin-bottom:13px}
+.cloud-provider-select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font-size:14px;font-family:inherit;margin-bottom:12px;cursor:pointer;font-weight:600}
+.cloud-status-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel);border-radius:12px;margin-bottom:12px;border:1px solid var(--line)}
+.cloud-status-row .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cloud-status-row .dot.green{background:var(--green);box-shadow:0 0 8px var(--green)}
+.cloud-status-row .dot.gray{background:var(--muted)}
+.cloud-status-row .dot.red{background:var(--red)}
+.cloud-status-row .status-text{font-size:13px;font-weight:600;color:var(--ink);flex:1}
+.cloud-btn{width:100%;padding:12px;border:0;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:opacity .15s}
+.cloud-btn:active{opacity:.75}
+.cloud-btn.primary-cloud{background:var(--cloud-blue);color:#fff}
+.cloud-btn.secondary-cloud{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.cloud-btn.danger-cloud{background:transparent;color:var(--red);border:1px solid var(--red)}
+.cloud-btn:disabled{opacity:.4;cursor:not-allowed}
+.cloud-config-field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;text-align:left;width:100%}
+.cloud-config-field label{font-size:12px;color:var(--muted);font-weight:600}
+.cloud-config-field input{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font-size:14px;font-family:inherit;outline:0}
+.cloud-config-field input:focus{border-color:var(--cloud-blue)}
+.cloud-config-field .hint{font-size:11px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- PIN OVERLAY -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-icon" id="pinIcon">🔐</div>
+  <div class="pin-title" id="pinTitle">PIN eingeben</div>
+  <div class="pin-sub" id="pinSub">Zum Entsperren</div>
+  <div class="pin-dots"><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div></div>
+  <div class="pin-error" id="pinError"></div>
+  <div class="pin-keypad">
+    <button class="pin-key" data-value="1">1</button><button class="pin-key" data-value="2">2</button><button class="pin-key" data-value="3">3</button>
+    <button class="pin-key" data-value="4">4</button><button class="pin-key" data-value="5">5</button><button class="pin-key" data-value="6">6</button>
+    <button class="pin-key" data-value="7">7</button><button class="pin-key" data-value="8">8</button><button class="pin-key" data-value="9">9</button>
+    <button class="pin-key empty" data-value="clear">⌫</button><button class="pin-key" data-value="0">0</button><button class="pin-key" data-value="enter">✓</button>
+  </div>
+  <div class="pin-setup-hint" id="pinSetupHint"></div>
+</div>
+
+<div class="phone-shell" id="app">
+  <header class="top">
+    <div class="status"><span id="clockDisplay">09:41</span><span>●●● 5G 🔋</span></div>
+    <div class="brand">
+      <div class="logo">🗂️</div>
+      <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
+      <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
+    </div>
+    <div class="sync-pill">🛡️ lokal gesichert · ☁️ Multi-Cloud</div>
+  </header>
+
+  <main id="mainContent">
+    <div class="install-banner" id="installBanner">
+      <div><div class="install-text">📱 App installieren</div><div class="install-sub">Für schnellen Zugriff</div></div>
+      <button class="install-btn" id="installBtn">Installieren</button>
+      <button class="install-close" id="installCloseBtn">✕</button>
+    </div>
+
+    <!-- HOME -->
+    <section id="home" class="screen active">
+      <div class="search-card" onclick="switchScreen('search')">
+        <span class="search-icon">🔎</span><input readonly placeholder="Suche in Dateinamen & PDF-Inhalten..." />
+      </div>
+      <div class="quick">
+        <button class="big-action" onclick="switchScreen('upload')"><span>Neues Dokument erfassen</span><strong>➕ Neuer Beleg</strong></button>
+        <div class="small-stack">
+          <button class="small-action" onclick="triggerUpload('image/*')"><strong>📷 Foto</strong><span>Kamera/Scan</span></button>
+          <button class="small-action" onclick="switchScreenWithFilter('search','Rechnung')"><strong>🧾 Rechnung</strong><span>schnell suchen</span></button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat blue" onclick="switchScreen('search')"><span class="icon">📄</span><b id="statTotal">0</b><span>Belege</span></div>
+        <div class="stat red" onclick="showOpenDocuments()"><span class="icon">⏳</span><b id="statOpen">0</b><span>Zu prüfen</span></div>
+        <div class="stat green" onclick="switchScreenWithFilter('search','Rechnung')"><span class="icon">🧾</span><b id="statInvoices">0</b><span>Rechnungen</span></div>
+        <div class="stat orange" onclick="switchScreenWithFilter('search','Garantie')"><span class="icon">🛡️</span><b id="statWarranty">0</b><span>Garantien</span></div>
+        <div class="stat purple" onclick="switchScreenWithFilter('search','E-Mail')"><span class="icon">✉️</span><b id="statEmails">0</b><span>E-Mails</span></div>
+        <div class="stat blue" onclick="showCategories()"><span class="icon">🏷️</span><b id="statCategories">0</b><span>Kategorien</span></div>
+        <div class="stat green" onclick="switchScreen('more')"><span class="icon">📅</span><b id="statMonths">0</b><span>Monate</span></div>
+        <div class="stat" onclick="reindexPDFs()"><span class="icon">🔍</span><b id="statIndexed">0</b><span>Indiziert</span></div>
+      </div>
+      <div class="section-title"><h2>📊 Dashboard</h2><a onclick="switchScreen('dashboard')">Mehr</a></div>
+      <div class="dashboard-grid">
+        <div class="dashboard-card green"><span class="icon">💰</span><div class="value" id="previewTotal">0,00 €</div><div class="label">Gesamt</div></div>
+        <div class="dashboard-card blue"><span class="icon">📊</span><div class="value" id="previewAvg">0,00 €</div><div class="label">Ø Beleg</div></div>
+        <div class="dashboard-card orange"><span class="icon">📄</span><div class="value" id="previewCount">0</div><div class="label">Belege</div></div>
+      </div>
+      <div class="chart-container"><canvas id="previewChart"></canvas></div>
+      <div class="section-title"><h2>Zuletzt hinzugefügt</h2><a onclick="switchScreen('search')">Alle</a></div>
+      <div class="list" id="recentList"></div>
+    </section>
+
+    <!-- UPLOAD -->
+    <section id="upload" class="screen">
+      <div class="panel">
+        <h2>Was möchtest du hinzufügen?</h2>
+        <p class="hint">📷 Foto oder PDF → OCR erkennt Betrag, Datum & Firma.<br>✉️ E-Mails (EML/MSG) automatisch.<br>🔍 PDFs werden für Volltextsuche indiziert.</p>
+        <div class="upload-grid">
+          <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR-Erkennung</span></button>
+          <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR-Erkennung</span></button>
+          <button class="upload-tile" onclick="triggerUpload('.pdf,.doc,.docx,.xls,.xlsx')"><div class="ico">📄</div><strong>Datei/PDF</strong><span>Volltext-Index</span></button>
+          <button class="upload-tile" onclick="triggerUpload('.eml,.msg')"><div class="ico">✉️</div><strong>E-Mail</strong><span>EML/MSG</span></button>
+        </div>
+      </div>
+      <div class="analysis" id="analysisBox">
+        <h3>📋 Automatische Erkennung</h3>
+        <div class="ocr-status" id="ocrStatus"><span>⏳ Warte auf Datei...</span></div>
+        <div class="ocr-progress"><i id="ocrProgressBar" style="width:0%"></i></div>
+        <div class="edit-field"><label>Typ</label><b id="aType">—</b></div>
+        <div class="edit-field"><label>Firma</label><input id="aCompanyInput" placeholder="Automatisch" /></div>
+        <div class="edit-field"><label>Datum</label><input id="aDateInput" placeholder="TT.MM.JJJJ" /></div>
+        <div class="edit-field"><label>Betrag</label><input id="aAmountInput" placeholder="z.B. 129,99 €" /></div>
+        <div class="edit-field"><label>Tags</label><b id="aTags">—</b></div>
+        <div class="edit-field" id="fulltextInfo" style="display:none;border-bottom:0;"><label>📝 Volltext</label><b id="aFulltext" style="font-weight:400;font-size:11px;color:var(--muted);">indiziert</b></div>
+        <div class="btn-row">
+          <button class="secondary" onclick="showToast('Bearbeiten')">✏️</button>
+          <button class="primary" id="saveDocBtn" onclick="saveCurrentDocument()">💾 Speichern</button>
+        </div>
+      </div>
+      <input type="file" id="fileInput" class="file-input-hidden" multiple accept="*/*" />
+    </section>
+
+    <!-- SEARCH -->
+    <section id="search" class="screen">
+      <div class="search-card" style="margin-top:-27px">
+        <span class="search-icon">🔎</span>
+        <input id="searchInput" placeholder="Suche..." oninput="performSearch()" />
+      </div>
+      <div class="chips">
+        <button class="chip active" data-filter="Alle" onclick="setFilter('Alle')">Alle</button>
+        <button class="chip" data-filter="PDF" onclick="setFilter('PDF')">📄 PDF</button>
+        <button class="chip" data-filter="Bild" onclick="setFilter('Bild')">🖼️ Bild</button>
+        <button class="chip" data-filter="E-Mail" onclick="setFilter('E-Mail')">✉️ E-Mail</button>
+        <button class="chip" data-filter="Rechnung" onclick="setFilter('Rechnung')">🧾 Rechnung</button>
+        <button class="chip" data-filter="Garantie" onclick="setFilter('Garantie')">🛡️ Garantie</button>
+        <button class="chip" data-filter="offen" onclick="setFilter('offen')">⏳ Zu prüfen</button>
+      </div>
+      <div class="section-title"><h2>Suchergebnisse</h2><a id="resultCount">0 Treffer</a></div>
+      <div class="list" id="searchList"></div>
+    </section>
+
+    <!-- CASES -->
+    <section id="cases" class="screen">
+      <div class="panel">
+        <h2>📁 Vorgänge / Akten</h2>
+        <button class="primary" style="width:100%;margin-top:10px" onclick="addNewCase()">➕ Neuen Vorgang anlegen</button>
+      </div>
+      <div id="caseList"></div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="screen">
+      <div class="panel">
+        <h2>📊 Finanzübersicht</h2>
+        <div class="dashboard-grid">
+          <div class="dashboard-card green"><span class="icon">💰</span><div class="value" id="dashTotal">0,00 €</div><div class="label">Gesamt</div></div>
+          <div class="dashboard-card blue"><span class="icon">📊</span><div class="value" id="dashAvg">0,00 €</div><div class="label">Ø Beleg</div></div>
+          <div class="dashboard-card orange"><span class="icon">📄</span><div class="value" id="dashCount">0</div><div class="label">Belege</div></div>
+        </div>
+        <div class="chart-container"><canvas id="dashLineChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>🏷️ Kategorie-Verteilung</h3>
+        <div class="chart-container pie"><canvas id="dashPieChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- MORE -->
+    <section id="more" class="screen">
+      <div class="tabs">
+        <button class="tab active" onclick="switchMoreTab('settings')">Archiv</button>
+        <button class="tab" onclick="switchMoreTab('budget')">💰 Haushaltsbuch</button>
+      </div>
+      <div id="settingsTab" class="more-tab">
+        <!-- CLOUD-SYNC SECTION -->
+        <div class="cloud-section">
+          <h3 style="margin-bottom:12px;">☁️ Cloud-Sync</h3>
+          <select class="cloud-provider-select" id="cloudProviderSelect" onchange="onProviderChange()">
+            <option value="google">🔵 Google Drive</option>
+            <option value="nextcloud">☁️ Nextcloud / WebDAV</option>
+            <option value="dropbox" disabled>🟣 Dropbox (bald verfügbar)</option>
+          </select>
+          <div class="cloud-status-row">
+            <span class="dot gray" id="cloudDot"></span>
+            <span class="status-text" id="cloudStatusText">Nicht verbunden</span>
+          </div>
+          <button class="cloud-btn primary-cloud" id="cloudConnectBtn" onclick="cloudConnect()">🔗 Verbinden</button>
+          <div id="cloudActions" style="display:none;">
+            <button class="cloud-btn primary-cloud" onclick="cloudUploadBackup()">⬆️ Backup hochladen</button>
+            <button class="cloud-btn secondary-cloud" onclick="cloudListBackups()">📂 Backups anzeigen</button>
+            <button class="cloud-btn secondary-cloud" onclick="cloudConfigure()">⚙️ Einstellungen</button>
+            <button class="cloud-btn danger-cloud" onclick="cloudDisconnect()">🚫 Verbindung trennen</button>
+          </div>
+        </div>
+
+        <div class="more-grid">
+          <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
+          <div class="more-card" onclick="changePin()"><div class="ico">🔐</div><strong>PIN ändern</strong><span class="hint">Passwort ändern</span></div>
+          <div class="more-card" onclick="switchScreen('dashboard')"><div class="ico">📊</div><strong>Dashboard</strong><span class="hint">Statistiken</span></div>
+          <div class="more-card" onclick="showCategories()"><div class="ico">🏷️</div><strong>Kategorien</strong><span class="hint">Alle anzeigen</span></div>
+          <div class="more-card" onclick="showOpenDocuments()"><div class="ico">⏳</div><strong>Zu prüfen</strong><span class="hint">Ungeprüfte Belege</span></div>
+          <div class="more-card" onclick="reindexPDFs()"><div class="ico">🔍</div><strong>PDFs indizieren</strong><span class="hint">Volltext für alte PDFs</span></div>
+          <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
+          <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessener PIN</span></div>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;">
+          <span class="hint">📦 Version 9.0 · Multi-Cloud-Sync</span>
+        </div>
+      </div>
+      <div id="budgetTab" class="more-tab" style="display:none">
+        <div class="budget">
+          <div class="month-nav"><button onclick="changeMonth(-1)">◀</button><span id="budgetMonth">August 2026</span><button onclick="changeMonth(1)">▶</button></div>
+          <div class="sum" id="budgetTotal">0,00 €</div>
+          <div class="bar"><i id="budgetBar" style="width:0%"></i></div>
+        </div>
+        <div class="list" style="margin-top:12px" id="budgetCategories"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-target="home" onclick="switchScreen('home')"><span class="nicon">🏠</span><span>Start</span></button>
+    <button class="nav-btn" data-target="search" onclick="switchScreen('search')"><span class="nicon">🔎</span><span>Suche</span></button>
+    <button class="nav-btn" data-target="upload" onclick="switchScreen('upload')"><span class="fab">＋</span><span>Upload</span></button>
+    <button class="nav-btn" data-target="dashboard" onclick="switchScreen('dashboard')"><span class="nicon">📊</span><span>Dashboard</span></button>
+    <button class="nav-btn" data-target="more" onclick="switchScreen('more')"><span class="nicon">☰</span><span>Mehr</span></button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+  <div class="modal-overlay" id="docModal">
+    <div class="modal-content">
+      <div class="modal-header"><h3 id="modalTitle">📄</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+      <div class="modal-body" id="modalBody"><div class="big-icon">📄</div><div class="file-name">Lade...</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+const STORAGE_KEY='archiv_data',DARK_KEY='archiv_dark',PIN_HASH_KEY='archiv_pin_hash',CLOUD_CONFIG_KEY='archiv_cloud_config',CLOUD_TOKENS_KEY='archiv_cloud_tokens';
+let appData={docs:[],cases:[],nextDocId:1,nextCaseId:1};
+let currentFilter='Alle',pendingDoc=null,isProcessing=false,fileCache=null;
+let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear();
+let previewChart=null,dashLineChart=null,dashPieChart=null;
+
+// ========== PIN ==========
+let pinEntry=[],pinMode='unlock',pinTemp=[],pinChangeOld=[];
+function hashPin(p){let h=0;for(let i=0;i<p.length;i++){h=((h<<5)-h)+p.charCodeAt(i);h=h&h}return'pin_'+Math.abs(h)}
+function getPinHash(){return localStorage.getItem(PIN_HASH_KEY)}
+function isPinSet(){return!!getPinHash()}
+function verifyPin(p){return hashPin(p)===getPinHash()}
+function savePin(p){localStorage.setItem(PIN_HASH_KEY,hashPin(p))}
+function showPinOverlay(m){pinMode=m||'unlock';pinEntry=[];pinTemp=[];pinChangeOld=[];document.getElementById('pinOverlay').classList.add('show');updatePinUI()}
+function hidePinOverlay(){document.getElementById('pinOverlay').classList.remove('show')}
+function updatePinUI(){
+  const dots=document.querySelectorAll('.pin-dot'),err=document.getElementById('pinError'),t=document.getElementById('pinTitle'),s=document.getElementById('pinSub');
+  dots.forEach((d,i)=>d.classList.toggle('filled',i<pinEntry.length));err.textContent='';
+  if(pinMode==='setup'){t.textContent='🔐 PIN einrichten';s.textContent=pinTemp.length===0?'Gib eine 4-stellige PIN ein':'Wiederhole die PIN'}
+  else if(pinMode==='change'){if(pinChangeOld.length===0){t.textContent='🔐 PIN ändern';s.textContent='Alte PIN eingeben'}else if(pinTemp.length===0){t.textContent='🔐 Neue PIN';s.textContent='Neue 4-stellige PIN'}else{t.textContent='🔐 Bestätigen';s.textContent='Neue PIN wiederholen'}}
+  else{t.textContent='🔐 PIN eingeben';s.textContent='Zum Entsperren'}
+}
+function pinPress(v){
+  const err=document.getElementById('pinError');
+  if(v==='clear'){if(pinEntry.length>0){pinEntry.pop();updatePinUI()}return}
+  if(v==='enter'){if(pinEntry.length===4)handlePinEntry();else err.textContent='⚠️ 4 Ziffern nötig';return}
+  if(pinEntry.length<4){pinEntry.push(v);updatePinUI();if(pinEntry.length===4)setTimeout(handlePinEntry,250)}
+}
+function handlePinEntry(){
+  const err=document.getElementById('pinError'),e=pinEntry.join('');
+  if(pinMode==='unlock'){if(verifyPin(e)){hidePinOverlay();showToast('✅ Entsperrt')}else{err.textContent='❌ Falsche PIN!';pinEntry=[];updatePinUI()}return}
+  if(pinMode==='setup'){if(pinTemp.length===0){pinTemp=[...pinEntry];pinEntry=[];updatePinUI();return}if(pinTemp.join('')===e){savePin(e);hidePinOverlay();showToast('✅ PIN eingerichtet');initApp()}else{err.textContent='❌ Nicht übereinstimmend!';pinTemp=[];pinEntry=[];updatePinUI()}return}
+  if(pinMode==='change'){if(pinChangeOld.length===0){if(verifyPin(e)){pinChangeOld=[...pinEntry];pinEntry=[];updatePinUI()}else{err.textContent='❌ Alte PIN falsch!';pinEntry=[];updatePinUI()}return}if(pinTemp.length===0){pinTemp=[...pinEntry];pinEntry=[];updatePinUI();return}if(pinTemp.join('')===e){savePin(e);hidePinOverlay();showToast('✅ PIN geändert')}else{err.textContent='❌ Nicht übereinstimmend!';pinTemp=[];pinEntry=[];updatePinUI()}return}
+}
+document.querySelectorAll('.pin-key').forEach(b=>b.addEventListener('click',function(){pinPress(this.dataset.value)}));
+function changePin(){showPinOverlay(isPinSet()?'change':'setup')}
+function resetPin(){if(confirm('⚠️ PIN zurücksetzen?')){localStorage.removeItem(PIN_HASH_KEY);showToast('🔄 Zurückgesetzt');setTimeout(()=>location.reload(),800)}}
+
+// ========== CLOUD CONFIG ==========
+let cloudConfig={provider:'google',google:{clientId:''},nextcloud:{url:'',username:'',password:''},dropbox:{}};
+let cloudTokens={};
+function loadCloudConfig(){try{const c=localStorage.getItem(CLOUD_CONFIG_KEY);if(c)cloudConfig={...cloudConfig,...JSON.parse(c)};const t=localStorage.getItem(CLOUD_TOKENS_KEY);if(t)cloudTokens=JSON.parse(t)}catch(e){}}
+function saveCloudConfig(){localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(cloudConfig))}
+function saveCloudTokens(){localStorage.setItem(CLOUD_TOKENS_KEY,JSON.stringify(cloudTokens))}
+
+// Provider architecture
+const CloudProviders={
+  google:{
+    name:'Google Drive',icon:'🔵',
+    isConnected:()=>{const t=cloudTokens.google;return t&&t.access_token&&t.expires_at>Date.now()},
+    needsConfig:()=>!cloudConfig.google.clientId,
+    disconnect:()=>{delete cloudTokens.google;saveCloudTokens()}
+  },
+  nextcloud:{
+    name:'Nextcloud',icon:'☁️',
+    isConnected:()=>!!(cloudConfig.nextcloud.url&&cloudConfig.nextcloud.username&&cloudConfig.nextcloud.password),
+    needsConfig:()=>!(cloudConfig.nextcloud.url&&cloudConfig.nextcloud.username),
+    disconnect:()=>{cloudConfig.nextcloud.password='';saveCloudConfig()}
+  },
+  dropbox:{name:'Dropbox',icon:'🟣',disabled:true}
+};
+
+function getCurrentProvider(){return CloudProviders[cloudConfig.provider]}
+function onProviderChange(){cloudConfig.provider=document.getElementById('cloudProviderSelect').value;saveCloudConfig();updateCloudUI()}
+
+function updateCloudUI(){
+  const sel=document.getElementById('cloudProviderSelect');sel.value=cloudConfig.provider;
+  const p=getCurrentProvider(),dot=document.getElementById('cloudDot'),txt=document.getElementById('cloudStatusText');
+  const connectBtn=document.getElementById('cloudConnectBtn'),actions=document.getElementById('cloudActions');
+  if(!p||p.disabled){dot.className='dot gray';txt.textContent='Nicht verfügbar';connectBtn.style.display='none';actions.style.display='none';return}
+  if(p.isConnected()){dot.className='dot green';txt.textContent='✅ Verbunden mit '+p.name;connectBtn.style.display='none';actions.style.display='block'}
+  else if(p.needsConfig()){dot.className='dot red';txt.textContent='⚙️ Konfiguration nötig';connectBtn.style.display='block';connectBtn.textContent='⚙️ Einrichten';actions.style.display='none'}
+  else{dot.className='dot gray';txt.textContent='Nicht verbunden';connectBtn.style.display='block';connectBtn.textContent='🔗 Verbinden';actions.style.display='none'}
+}
+
+function cloudConnect(){
+  const p=getCurrentProvider();if(!p)return;
+  if(p.needsConfig()){openCloudConfigModal();return}
+  if(cloudConfig.provider==='google')connectGoogle();
+  else if(cloudConfig.provider==='nextcloud'){if(cloudConfig.nextcloud.password){saveCloudConfig();updateCloudUI();showToast('✅ Nextcloud verbunden')}else openCloudConfigModal()}
+}
+
+function cloudDisconnect(){
+  const p=getCurrentProvider();if(!p)return;
+  if(confirm('Verbindung zu '+p.name+' trennen?')){p.disconnect();updateCloudUI();showToast('🚫 Getrennt')}
+}
+
+function cloudConfigure(){openCloudConfigModal()}
+
+function openCloudConfigModal(){
+  const m=document.getElementById('docModal'),t=document.getElementById('modalTitle'),b=document.getElementById('modalBody');
+  t.textContent='⚙️ Cloud konfigurieren';
+  if(cloudConfig.provider==='google'){
+    b.innerHTML='<div class="cloud-config-field"><label>Google Client ID</label><input id="cfgGoogleClient" value="'+(cloudConfig.google.clientId||'')+'" placeholder="xxxxx.apps.googleusercontent.com" /></div><p class="hint" style="text-align:left;margin-bottom:12px;">Aus der Google Cloud Console. Siehe Anleitung.</p><button class="cloud-btn primary-cloud" onclick="saveGoogleConfig()">💾 Speichern</button><button class="secondary-btn" onclick="closeModal()">Abbrechen</button>';
+  }else if(cloudConfig.provider==='nextcloud'){
+    b.innerHTML='<div class="cloud-config-field"><label>WebDAV-URL</label><input id="cfgNcUrl" value="'+(cloudConfig.nextcloud.url||'')+'" placeholder="https://cloud.example.com/remote.php/dav/files/USER/" /></div><div class="cloud-config-field"><label>Benutzername</label><input id="cfgNcUser" value="'+(cloudConfig.nextcloud.username||'')+'" /></div><div class="cloud-config-field"><label>App-Passwort</label><input id="cfgNcPass" type="password" value="'+(cloudConfig.nextcloud.password||'')+'" /></div><p class="hint" style="text-align:left;margin-bottom:12px;">Erstelle ein App-Passwort in Nextcloud: Einstellungen → Sicherheit.</p><button class="cloud-btn primary-cloud" onclick="saveNextcloudConfig()">💾 Speichern</button><button class="secondary-btn" onclick="closeModal()">Abbrechen</button>';
+  }
+  m.classList.add('open');
+}
+
+function saveGoogleConfig(){
+  const v=document.getElementById('cfgGoogleClient').value.trim();
+  if(!v){showToast('⚠️ Client ID nötig');return}
+  cloudConfig.google.clientId=v;saveCloudConfig();closeModal();updateCloudUI();showToast('✅ Gespeichert');
+}
+
+function saveNextcloudConfig(){
+  const url=document.getElementById('cfgNcUrl').value.trim();
+  const u=document.getElementById('cfgNcUser').value.trim();
+  const p=document.getElementById('cfgNcPass').value.trim();
+  if(!url||!u||!p){showToast('⚠️ Alle Felder nötig');return}
+  cloudConfig.nextcloud.url=url;cloudConfig.nextcloud.username=u;cloudConfig.nextcloud.password=p;
+  saveCloudConfig();closeModal();updateCloudUI();showToast('✅ Nextcloud verbunden');
+}
+
+// ========== GOOGLE DRIVE ==========
+function connectGoogle(){
+  const cid=cloudConfig.google.clientId;
+  if(!cid){openCloudConfigModal();return}
+  if(window.google&&google.accounts&&google.accounts.oauth2){
+    try{
+      const client=google.accounts.oauth2.initTokenClient({
+        client_id:cid,
+        scope:'https://www.googleapis.com/auth/drive.file',
+        callback:(resp)=>{
+          if(resp.access_token){
+            cloudTokens.google={access_token:resp.access_token,expires_at:Date.now()+(resp.expires_in||3600)*1000};
+            saveCloudTokens();updateCloudUI();showToast('✅ Google Drive verbunden');
+          }else showToast('❌ Fehler bei Verbindung');
+        }
+      });
+      client.requestAccessToken();
+      return;
+    }catch(e){console.warn('GIS failed',e)}
+  }
+  // Fallback: manual
+  const redirect='https://developers.google.com/oauthplayground';
+  const url='https://accounts.google.com/o/oauth2/v2/auth?client_id='+encodeURIComponent(cid)+'&redirect_uri='+encodeURIComponent(redirect)+'&response_type=token&scope='+encodeURIComponent('https://www.googleapis.com/auth/drive.file')+'&prompt=consent';
+  window.open(url,'_blank');
+  setTimeout(()=>{
+    const token=prompt('Füge den Access-Token ein (nach #access_token= und vor &):');
+    if(token){cloudTokens.google={access_token:token,expires_at:Date.now()+3500*1000};saveCloudTokens();updateCloudUI();showToast('✅ Google Drive verbunden')}
+  },1500);
+}
+
+async function uploadToGoogle(fileName,blob){
+  const t=cloudTokens.google;if(!t||!t.access_token)throw new Error('Nicht verbunden');
+  const metadata={name:fileName,parents:['root'],mimeType:'application/json'};
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+  form.append('file',blob);
+  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+t.access_token},body:form});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'Upload fehlgeschlagen')}
+  return await r.json();
+}
+
+async function listFromGoogle(){
+  const t=cloudTokens.google;if(!t)throw new Error('Nicht verbunden');
+  const q=encodeURIComponent("name contains 'archiv_backup' and trashed = false");
+  const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&orderBy=createdTime desc&fields=files(id,name,createdTime,size)',{headers:{'Authorization':'Bearer '+t.access_token}});
+  if(!r.ok)throw new Error('Liste fehlgeschlagen');
+  const d=await r.json();return d.files||[];
+}
+
+async function downloadFromGoogle(id){
+  const t=cloudTokens.google;
+  const r=await fetch('https://www.googleapis.com/drive/v3/files/'+id+'?alt=media',{headers:{'Authorization':'Bearer '+t.access_token}});
+  if(!r.ok)throw new Error('Download fehlgeschlagen');
+  return await r.json();
+}
+
+// ========== NEXTCLOUD / WEBDAV ==========
+async function uploadToNextcloud(fileName,blob){
+  const c=cloudConfig.nextcloud;
+  const url=c.url.replace(/\/$/,'')+'/'+encodeURIComponent(fileName);
+  const auth=btoa(c.username+':'+c.password);
+  const r=await fetch(url,{method:'PUT',headers:{'Authorization':'Basic '+auth,'Content-Type':'application/json'},body:blob});
+  if(!r.ok)throw new Error('Upload fehlgeschlagen: '+r.status);
+  return{name:fileName};
+}
+
+async function listFromNextcloud(){
+  const c=cloudConfig.nextcloud;
+  const auth=btoa(c.username+':'+c.password);
+  const body='<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:displayname/><d:getcontentlength/><d:getlastmodified/></d:prop></d:propfind>';
+  const r=await fetch(c.url.replace(/\/$/,'')+'/',{method:'PROPFIND',headers:{'Authorization':'Basic '+auth,'Depth':'1','Content-Type':'application/xml'},body});
+  if(!r.ok)throw new Error('Liste fehlgeschlagen');
+  const text=await r.text();
+  const parser=new DOMParser();
+  const xml=parser.parseFromString(text,'text/xml');
+  const responses=xml.querySelectorAll('response');
+  const files=[];
+  responses.forEach(resp=>{
+    const href=resp.querySelector('href')?.textContent||'';
+    const name=resp.querySelector('displayname')?.textContent||href.split('/').filter(x=>x).pop()||'';
+    if(name.includes('archiv_backup')&&name.endsWith('.json')){
+      const size=resp.querySelector('getcontentlength')?.textContent||'0';
+      const modified=resp.querySelector('getlastmodified')?.textContent||'';
+      files.push({name,path:href,size,createdTime:modified});
+    }
+  });
+  return files;
+}
+
+async function downloadFromNextcloud(path){
+  const c=cloudConfig.nextcloud;
+  const auth=btoa(c.username+':'+c.password);
+  const r=await fetch(path,{headers:{'Authorization':'Basic '+auth}});
+  if(!r.ok)throw new Error('Download fehlgeschlagen');
+  return await r.json();
+}
+
+// ========== CLOUD ACTIONS ==========
+async function cloudUploadBackup(){
+  try{
+    showToast('⏳ Lade hoch...');
+    const data=JSON.stringify(appData,null,2);
+    const blob=new Blob([data],{type:'application/json'});
+    const fn='archiv_backup_'+new Date().toISOString().slice(0,10)+'.json';
+    if(cloudConfig.provider==='google')await uploadToGoogle(fn,blob);
+    else if(cloudConfig.provider==='nextcloud')await uploadToNextcloud(fn,blob);
+    else throw new Error('Unbekannter Anbieter');
+    showToast('✅ Backup hochgeladen: '+fn);
+  }catch(e){
+    showToast('❌ Fehler: '+e.message);
+    if(e.message.includes('401')||e.message.includes('invalid')){const p=getCurrentProvider();if(p)p.disconnect();updateCloudUI()}
+  }
+}
+
+async function cloudListBackups(){
+  try{
+    showToast('⏳ Lade Liste...');
+    let files=[];
+    if(cloudConfig.provider==='google')files=await listFromGoogle();
+    else if(cloudConfig.provider==='nextcloud')files=await listFromNextcloud();
+    if(files.length===0){showToast('📂 Keine Backups gefunden');return}
+    const m=document.getElementById('docModal'),t=document.getElementById('modalTitle'),b=document.getElementById('modalBody');
+    t.textContent='📂 Cloud-Backups';
+    b.innerHTML='<div class="category-list" style="width:100%">'+files.map((f,i)=>'<div class="category-item" onclick="cloudRestore('+i+')" data-file-idx="'+i+'"><div><div class="cat-name">'+f.name+'</div><div class="cat-count">'+(f.createdTime?new Date(f.createdTime).toLocaleString('de-DE'):'')+(f.size?' · '+Math.round(f.size/1024)+' KB':'')+'</div></div><div class="cat-amount">⬇️</div></div>').join('')+'</div><button class="secondary-btn" onclick="closeModal()" style="margin-top:16px">Schließen</button>';
+    window._cloudFiles=files;
+    m.classList.add('open');
+  }catch(e){showToast('❌ Fehler: '+e.message)}
+}
+
+async function cloudRestore(idx){
+  try{
+    const files=window._cloudFiles||[];const f=files[idx];if(!f){showToast('⚠️ Datei nicht gefunden');return}
+    if(!confirm('Backup "'+f.name+'" wiederherstellen? Aktuelle Daten werden überschrieben!'))return;
+    showToast('⏳ Lade herunter...');
+    let data;
+    if(cloudConfig.provider==='google')data=await downloadFromGoogle(f.id);
+    else if(cloudConfig.provider==='nextcloud')data=await downloadFromNextcloud(f.path);
+    if(!data.docs||!data.cases)throw new Error('Ungültiges Backup-Format');
+    if(!confirm('⚠️ ACHTUNG: Alle aktuellen Daten werden überschrieben! Fortfahren?'))return;
+    appData=data;saveData();closeModal();updateUI();updateAllCharts();
+    showToast('✅ Backup wiederhergestellt! ('+appData.docs.length+' Dokumente)');
+  }catch(e){showToast('❌ Fehler: '+e.message)}
+}
+
+// ========== PWA ==========
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(!localStorage.getItem('archiv_install_dismissed'))document.getElementById('installBanner').classList.add('show')});
+document.getElementById('installBtn').addEventListener('click',async()=>{const b=document.getElementById('installBanner');if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;b.classList.remove('show')}else showToast('📱 In Chrome öffnen → Zum Startbildschirm')});
+document.getElementById('installCloseBtn').addEventListener('click',()=>{document.getElementById('installBanner').classList.remove('show');localStorage.setItem('archiv_install_dismissed','true')});
+
+// ========== DARK MODE ==========
+function toggleDarkMode(){document.body.classList.toggle('dark');const d=document.body.classList.contains('dark');localStorage.setItem(DARK_KEY,d?'true':'false');updateDarkUI(d);setTimeout(updateAllCharts,100);showToast(d?'🌙 Dark':'☀️ Light')}
+function updateDarkUI(d){document.getElementById('darkIcon').textContent=d?'☀️':'🌙';document.getElementById('darkLabel').textContent=d?'Light':'Dark';const ci=document.getElementById('darkCardIcon');if(ci)ci.textContent=d?'☀️':'🌙'}
+function loadDarkMode(){if(localStorage.getItem(DARK_KEY)==='true'){document.body.classList.add('dark');updateDarkUI(true)}else updateDarkUI(false)}
+
+// ========== CHARTS ==========
+function getChartColors(){const d=document.body.classList.contains('dark');return{grid:d?'rgba(255,255,255,0.1)':'rgba(20,58,90,0.1)',text:d?'#e2e8f0':'#122033',line:'#1f9d68',fill:d?'rgba(52,211,153,0.15)':'rgba(31,157,104,0.15)',pie:['#1f9d68','#143a5a','#f59e0b','#8b5cf6','#dc2626','#60a5fa','#f472b6','#14b8a6']}}
+function updateAllCharts(){updateDashStats();updatePreviewStats()}
+function getMonthlyData(){const docs=appData.docs,m=[],a=[],now=new Date();for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);m.push((d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear());let t=0;docs.forEach(x=>{if(x.date){const p=x.date.split('.');if(p.length===3&&p[1]===(d.getMonth()+1).toString().padStart(2,'0')&&p[2]===d.getFullYear().toString()){const v=parseFloat((x.amount||'').replace(',','.').replace(/[^0-9.]/g,''));if(!isNaN(v))t+=v}}});a.push(Math.round(t*100)/100)}return{months:m,amounts:a}}
+function getCategoryData(){const c={};appData.docs.forEach(d=>{const tags=d.tags||[];const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));if(isNaN(a)||a<=0)return;const cat=tags.find(t=>['Lebensmittel','Auto','Strom','Internet','Versicherung','Handy','Haushalt','Wohnen','Freizeit','Rechnung','Vertrag'].includes(t))||'Sonstiges';c[cat]=(c[cat]||0)+a});return Object.entries(c).sort((a,b)=>b[1]-a[1])}
+function updatePreviewStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);const cnt=docs.filter(d=>d.amount&&parseFloat(d.amount.replace(',','.').replace(/[^0-9.]/g,''))>0).length;const avg=cnt>0?tot/cnt:0;document.getElementById('previewTotal').textContent=tot.toFixed(2)+' €';document.getElementById('previewAvg').textContent=avg.toFixed(2)+' €';document.getElementById('previewCount').textContent=cnt;const ctx=document.getElementById('previewChart').getContext('2d');if(previewChart)previewChart.destroy();const dt=getMonthlyData(),c=getChartColors();previewChart=new Chart(ctx,{type:'line',data:{labels:dt.months,datasets:[{data:dt.amounts,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:c.line,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.parsed.y.toFixed(2)+' €'}}},scales:{y:{grid:{color:c.grid},ticks:{color:c.text,font:{size:9},callback:v=>v+' €'},beginAtZero:true},x:{grid:{display:false},ticks:{color:c.text,font:{size:9}}}}}})};
+function updateDashStats(){const docs=appData.docs;const tot=docs.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);const cnt=docs.filter(d=>d.amount&&parseFloat(d.amount.replace(',','.').replace(/[^0-9.]/g,''))>0).length;const avg=cnt>0?tot/cnt:0;document.getElementById('dashTotal').textContent=tot.toFixed(2)+' €';document.getElementById('dashAvg').textContent=avg.toFixed(2)+' €';document.getElementById('dashCount').textContent=cnt;const ctxL=document.getElementById('dashLineChart').getContext('2d');if(dashLineChart)dashLineChart.destroy();const dt=getMonthlyData(),c=getChartColors();dashLineChart=new Chart(ctxL,{type:'line',data:{labels:dt.months,datasets:[{data:dt.amounts,borderColor:c.line,backgroundColor:c.fill,fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:c.line,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>x.parsed.y.toFixed(2)+' €'}}},scales:{y:{grid:{color:c.grid},ticks:{color:c.text,font:{size:10},callback:v=>v+' €'},beginAtZero:true},x:{grid:{display:false},ticks:{color:c.text,font:{size:10}}}}}});const ctxP=document.getElementById('dashPieChart').getContext('2d');if(dashPieChart)dashPieChart.destroy();const catData=getCategoryData(),pc=getChartColors().pie;if(catData.length===0){dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels:['Keine Daten'],datasets:[{data:[1],backgroundColor:[c.grid],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:c.text,font:{size:10}}},tooltip:{enabled:false}}}});return}const labels=catData.map(x=>x[0]),vals=catData.map(x=>x[1]);dashPieChart=new Chart(ctxP,{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:labels.map((_,i)=>pc[i%pc.length]),borderWidth:2,borderColor:document.body.classList.contains('dark')?'#1a1a2e':'#f5f4ee'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:getChartColors().text,font:{size:10},padding:10,boxWidth:12}},tooltip:{callbacks:{label:x=>{const t=x.dataset.data.reduce((a,b)=>a+b,0);return x.label+': '+x.parsed.toFixed(2)+' € ('+((x.parsed/t)*100).toFixed(1)+'%)'}}}},onClick:function(e,el){if(el.length>0){const l=this.data.labels[el[0].index];switchScreenWithFilter('search',l)}}}})};
+
+// ========== DATA ==========
+function loadData(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)appData=JSON.parse(r)}catch(e){}}
+function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(appData))}catch(e){}updateUI();updateAllCharts()}
+
+// ========== HOME ==========
+function updateStats(){const docs=appData.docs;const inv=docs.filter(d=>d.tags&&d.tags.includes('Rechnung')).length;const war=docs.filter(d=>d.tags&&d.tags.includes('Garantie')).length;const em=docs.filter(d=>d.type==='E-Mail'||(d.tags&&d.tags.includes('E-Mail'))).length;const op=docs.filter(d=>d.status==='offen').length;const idx=docs.filter(d=>d.fulltext&&d.fulltext.length>10).length;const cats=new Set(),months=new Set();docs.forEach(d=>{(d.tags||[]).forEach(t=>{if(['Lebensmittel','Auto','Strom','Internet','Versicherung','Handy','Haushalt','Wohnen','Freizeit','Rechnung','Vertrag'].includes(t))cats.add(t)});if(d.date){const p=d.date.split('.');if(p.length===3)months.add(p[1]+'.'+p[2])}});document.getElementById('statTotal').textContent=docs.length;document.getElementById('statOpen').textContent=op||0;document.getElementById('statInvoices').textContent=inv;document.getElementById('statWarranty').textContent=war;document.getElementById('statEmails').textContent=em;document.getElementById('statCategories').textContent=cats.size||0;document.getElementById('statMonths').textContent=months.size||0;document.getElementById('statIndexed').textContent=idx;document.getElementById('docCount').textContent=docs.length+' Dokumente'}
+function renderRecent(){const list=document.getElementById('recentList');const r=[...appData.docs].sort((a,b)=>b.id-a.id).slice(0,5);if(r.length===0){list.innerHTML='<div class="panel"><p class="hint" style="text-align:center;padding:20px 0">📭 Noch keine Dokumente.</p></div>';return}list.innerHTML=r.map(d=>docCardHTML(d)).join('')}
+function docCardHTML(doc){const tags=doc.tags||[];const th=tags.map((t,i)=>{let c=i===0?'green':'';if(t==='E-Mail')c='email';if(t==='Garantie')c='orange';return'<span class="tag '+c+'">'+t+'</span>'}).join('');const am=doc.amount||'—';const m=doc.date?doc.date+' · ':'';const cn=doc.caseName?'📁 '+doc.caseName:'';const sb=doc.status==='offen'?'<span class="status-badge offen">⏳ zu prüfen</span>':'<span class="status-badge erledigt">✅ geprüft</span>';const hf=doc.fileName?'📎':'';const hi=doc.fulltext&&doc.fulltext.length>10?'<span class="tag indexed">🔍 indiziert</span>':'';const ic=doc.type==='E-Mail'?'email':'';const dn=doc.emailSubject?doc.emailSubject:doc.name;return'<article class="doc-card" onclick="openDocument('+doc.id+')"><div class="file-icon '+ic+'">'+(doc.icon||'📄')+'</div><div><h3>'+dn+' '+hf+'</h3><div class="meta">'+m+(doc.type||'Dokument')+' '+cn+' '+sb+'</div>'+(doc.emailFrom?'<div class="meta" style="font-size:11px;">✉️ '+doc.emailFrom+'</div>':'')+'<div class="tags">'+th+' '+hi+'</div></div><div class="amount">'+am+'</div></article>'}
+
+// ========== SEARCH ==========
+function performSearch(){const q=document.getElementById('searchInput').value.toLowerCase().trim();const filter=currentFilter;let r=appData.docs;if(filter==='offen')r=r.filter(d=>d.status==='offen');else if(filter!=='Alle')r=r.filter(d=>{const t=d.tags||[];return t.includes(filter)||d.type===filter});if(q)r=r.filter(d=>{const s=[d.name,d.type,d.company,d.amount,d.caseName,d.emailSubject,d.emailFrom,d.emailTo,d.emailBody,...(d.tags||[])].join(' ').toLowerCase();const f=d.fulltext?d.fulltext.toLowerCase():'';return s.includes(q)||f.includes(q)});const list=document.getElementById('searchList');list.innerHTML=r.length===0?'<div class="panel"><h3>Keine Treffer</h3></div>':r.map(d=>docCardHTML(d)).join('');document.getElementById('resultCount').textContent=r.length+' Treffer'}
+function setFilter(f){currentFilter=f;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter===f));performSearch()}
+function switchScreenWithFilter(s,f){switchScreen(s);if(s==='search')setFilter(f)}
+
+// ========== UPLOAD ==========
+function triggerUpload(accept){if(isProcessing)return;const i=document.getElementById('fileInput');i.accept=accept||'*/*';i.multiple=false;i.onchange=function(){if(this.files&&this.files.length>0)handleFile(this.files[0]);this.value=''};i.click()}
+async function handleFile(file){
+  if(isProcessing)return;
+  isProcessing=true;document.getElementById('saveDocBtn').disabled=true;
+  const s=document.getElementById('ocrStatus'),p=document.getElementById('ocrProgressBar');
+  s.innerHTML='<span class="spinner"></span> Analysiere '+file.name+'...';p.style.width='10%';
+  try{
+    const b64=await readFileAsBase64(file);
+    fileCache={name:file.name,data:b64,type:file.type,size:file.size};
+    const ext=file.name.split('.').pop().toLowerCase();
+    const tm={pdf:'PDF',jpg:'Bild',jpeg:'Bild',png:'Bild',gif:'Bild',webp:'Bild',doc:'Dokument',docx:'Dokument',xls:'Dokument',xlsx:'Dokument',eml:'E-Mail',msg:'E-Mail'};
+    const dt=tm[ext]||'Datei';
+    const im={PDF:'📄',Bild:'🖼️','E-Mail':'✉️',Dokument:'📄',Datei:'📎'};
+    const tags=[dt];const nl=file.name.toLowerCase();
+    let emailData=null,text='',company='',date='',amount='',fulltext='';
+    const fi=document.getElementById('fulltextInfo');
+    if(dt==='E-Mail'){p.style.width='30%';s.innerHTML='<span class="spinner"></span> E-Mail...';emailData=await parseEmail(b64,file.name);p.style.width='70%';
+      if(emailData){pendingDoc={name:emailData.subject||file.name,emailSubject:emailData.subject||'',emailFrom:emailData.from||'',emailTo:emailData.to||'',emailDate:emailData.date||'',emailBody:emailData.body||''};tags.push('E-Mail');
+        if(emailData.subject.toLowerCase().includes('rechnung')||emailData.body.toLowerCase().includes('rechnung'))tags.push('Rechnung');
+        if(emailData.subject.toLowerCase().includes('garantie')||emailData.body.toLowerCase().includes('garantie'))tags.push('Garantie');
+        company=emailData.from||'';
+        if(emailData.date){const d=new Date(emailData.date);if(!isNaN(d))date=d.getDate().toString().padStart(2,'0')+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear()}
+        if(emailData.body){const a=extractAmount(emailData.body);if(a)amount=a;fulltext=emailData.body}
+      }fi.style.display='none';
+    }
+    if(dt==='PDF'&&!emailData){p.style.width='30%';s.innerHTML='<span class="spinner"></span> PDF-Text...';const t=await extractTextFromPDF(b64);p.style.width='70%';
+      if(t){text=t;fulltext=t;s.innerHTML='📝 '+fulltext.length+' Zeichen';fi.style.display='flex';document.getElementById('aFulltext').textContent='✅ '+fulltext.length+' Zeichen'}
+      else{fi.style.display='flex';document.getElementById('aFulltext').textContent='⚠️ Kein Text'}
+      company=extractCompany(t)||company;date=extractDate(t)||date;amount=extractAmount(t)||amount;
+      const tl=t.toLowerCase();
+      if(tl.includes('rechnung'))tags.push('Rechnung');if(tl.includes('garantie'))tags.push('Garantie');if(tl.includes('vertrag'))tags.push('Vertrag');if(tl.includes('versicherung'))tags.push('Versicherung');if(tl.includes('strom'))tags.push('Strom');if(tl.includes('internet'))tags.push('Internet');
+    }else if(dt==='Bild'&&!emailData){p.style.width='30%';s.innerHTML='<span class="spinner"></span> OCR...';text=await performOCR(b64);p.style.width='70%';fi.style.display='none';
+      if(text){s.innerHTML='📝 '+text.length+' Zeichen';company=extractCompany(text)||company;date=extractDate(text)||date;amount=extractAmount(text)||amount;
+        const tl=text.toLowerCase();if(tl.includes('rechnung'))tags.push('Rechnung');if(tl.includes('garantie'))tags.push('Garantie')}
+    }else if(dt!=='E-Mail'){fi.style.display='none'}
+    if(nl.includes('rechnung'))tags.push('Rechnung');if(nl.includes('garantie'))tags.push('Garantie');if(nl.includes('vertrag'))tags.push('Vertrag');
+    const ut=[...new Set(tags)];
+    if(!pendingDoc){pendingDoc={name:file.name,type:dt,icon:im[dt]||'📄',tags:ut,amount,date,company,fileName:file.name,fileSize:file.size,fileType:file.type,status:'offen',caseName:'',caseId:null,emailSubject:'',emailFrom:'',emailTo:'',emailDate:'',emailBody:'',fulltext:fulltext||''}}
+    else{pendingDoc.type=dt;pendingDoc.icon=im[dt]||'📄';pendingDoc.tags=ut;pendingDoc.amount=amount||pendingDoc.amount||'';pendingDoc.date=date||pendingDoc.date||'';pendingDoc.company=company||pendingDoc.company||'';pendingDoc.fileName=file.name;pendingDoc.fileSize=file.size;pendingDoc.fileType=file.type;pendingDoc.status='offen';pendingDoc.fulltext=fulltext||''}
+    document.getElementById('aType').textContent=dt;document.getElementById('aCompanyInput').value=company||pendingDoc.emailFrom||'';document.getElementById('aDateInput').value=date||'';document.getElementById('aAmountInput').value=amount||'';document.getElementById('aTags').textContent=ut.join(', ');
+    p.style.width='100%';s.innerHTML='✅ Fertig!';
+    switchScreen('upload');document.getElementById('analysisBox').scrollIntoView({behavior:'smooth',block:'center'});
+    showToast('📎 '+file.name+' analysiert');
+  }catch(e){console.error(e);showToast('⚠️ '+e.message);document.getElementById('ocrStatus').innerHTML='❌ '+e.message}
+  finally{isProcessing=false;document.getElementById('saveDocBtn').disabled=false}
+}
+async function extractTextFromPDF(b64){try{const l=window.pdfjsLib;if(!l)return'';l.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';const bin=atob(b64.split(',')[1]);const bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);const pdf=await l.getDocument({data:bytes}).promise;let t='';for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();t+=c.items.map(x=>x.str).join(' ')+'\n'}return t}catch(e){return''}}
+async function performOCR(b64){try{if(typeof Tesseract==='undefined')return'';const r=await Tesseract.recognize(b64,'deu',{logger:m=>{if(m.status==='recognizing text'){const p=Math.round(m.progress*100);document.getElementById('ocrProgressBar').style.width=(30+p*0.4)+'%'}}});return r.data.text}catch(e){return''}}
+function extractCompany(t){const c=['Amazon','Google','Apple','Samsung','Vodafone','Telekom','Stadtwerke','Allianz','AXA','HUK','Sparkasse','Rewe','Aldi','Lidl','MediaMarkt','Saturn','IKEA','Zalando','Otto','eBay','PayPal','Netflix','Spotify','Microsoft','Adobe','DHL','Hermes','UPS','FedEx','Deutsche Bahn','Lufthansa'];for(const x of c)if(t.toLowerCase().includes(x.toLowerCase()))return x;const m=t.match(/(?:Firma|Anbieter|Unternehmen)[\s:]+([A-Za-zäöüßÄÖÜ][A-Za-zäöüßÄÖÜ\s\-\.]+)/i);return m?m[1].trim():''}
+function extractDate(t){const p=[/(\d{2})[\.\-/](\d{2})[\.\-/](\d{4})/,/(\d{2})[\.\-/](\d{2})[\.\-/](\d{2})/,/(\d{4})[\.\-/](\d{2})[\.\-/](\d{2})/];for(const x of p){const m=t.match(x);if(m){let d,mo,y;if(m[0].length===10){if(parseInt(m[1])>31){y=m[1];mo=m[2];d=m[3]}else{d=m[1];mo=m[2];y=m[3]}}else{d=m[1];mo=m[2];y='20'+m[3]}return d+'.'+mo+'.'+y}}return''}
+function extractAmount(t){const p=[{r:/(?:Gesamtsumme|Verbleibender Rechnungsbetrag)[\s\S]*?(\d{1,3}[.,]\d{2})/i,pr:1},{r:/(\d{1,3}[.,]\d{2})\s*(?:EUR|Euro|€)/i,pr:2},{r:/(?:Summe)[\s:]*(\d{1,3}[.,]\d{2})/i,pr:3},{r:/(\d{1,3}[.,]\d{2})\s*[€€]?/i,pr:4}];let bm='',bs=-1;for(const x of p){const m=t.match(x.r);if(m){let a=m[1].replace(/[^0-9,.]/g,'');if(!a.includes(',')&&!a.includes('.'))continue;let v=parseFloat(a.replace(',','.'));if(!isNaN(v)&&v>0&&v<5000){let sc=100-Math.abs(v-80)*0.5;sc+=(10-x.pr)*10;if(sc>bs){bs=sc;bm=a.replace('.',',')+' €'}}}}if(!bm){const m=t.match(/(\d{2})(\d{2})\s*[€€]?/i);if(m){const v=parseInt(m[1]+m[2]);if(v>0&&v<5000)bm=m[1]+','+m[2]+' €'}}return bm}
+function readFileAsBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)})}
+async function parseEmail(b64,fn){try{const t=atob(b64.split(',')[1]);const lines=t.split(/\r?\n/);let f='',to='',s='',d='',b='',isB=false;for(const l of lines){if(!isB){if(l.toLowerCase().startsWith('from:'))f=l.substring(5).trim();else if(l.toLowerCase().startsWith('to:'))to=l.substring(3).trim();else if(l.toLowerCase().startsWith('subject:'))s=l.substring(8).trim();else if(l.toLowerCase().startsWith('date:'))d=l.substring(5).trim();else if(l.trim()==='')isB=true}else b+=l+'\n'}if(!f&&!s){const fm=t.match(/From:\s*(.+)/i);if(fm)f=fm[1].trim();const sm=t.match(/Subject:\s*(.+)/i);if(sm)s=sm[1].trim();const dm=t.match(/Date:\s*(.+)/i);if(dm)d=dm[1].trim();b=t}if(s)s=s.replace(/[=\?]/g,' ').trim();return{from:f||'',to:to||'',subject:s||fn,date:d||'',body:b||''}}catch(e){return null}}
+function saveCurrentDocument(){
+  if(!pendingDoc){showToast('⚠️ Kein Dokument');return}
+  if(!pendingDoc.fileName){showToast('⚠️ Keine Datei-Referenz!');return}
+  const c=document.getElementById('aCompanyInput').value.trim(),d=document.getElementById('aDateInput').value.trim(),a=document.getElementById('aAmountInput').value.trim();
+  const doc={id:appData.nextDocId++,name:pendingDoc.name||pendingDoc.fileName,type:pendingDoc.type,icon:pendingDoc.icon||'📄',tags:pendingDoc.tags||[],amount:a||pendingDoc.amount||'',date:d||pendingDoc.date||new Date().toLocaleDateString('de-DE'),company:c||pendingDoc.company||'',fileName:pendingDoc.fileName,fileSize:pendingDoc.fileSize||0,fileType:pendingDoc.fileType||'',status:'offen',caseName:pendingDoc.caseName||'',caseId:pendingDoc.caseId||null,createdAt:new Date().toISOString(),emailSubject:pendingDoc.emailSubject||'',emailFrom:pendingDoc.emailFrom||'',emailTo:pendingDoc.emailTo||'',emailDate:pendingDoc.emailDate||'',emailBody:pendingDoc.emailBody||'',fulltext:pendingDoc.fulltext||''};
+  appData.docs.push(doc);saveData();fileCache=null;pendingDoc=null;showToast('✅ Gespeichert!');switchScreen('home');
+}
+
+// ========== CASES ==========
+function renderCases(){const list=document.getElementById('caseList');const cs=appData.cases||[];if(cs.length===0){list.innerHTML='<div class="panel"><p class="hint" style="text-align:center;padding:20px 0">📭 Keine Vorgänge.</p></div>';return}list.innerHTML=cs.map(c=>{const n=appData.docs.filter(d=>d.caseId===c.id).length;return'<div class="case-card" onclick="showToast(\'📁 '+c.name+'\')"><div class="case-icon">'+(c.icon||'📁')+'</div><div style="flex:1"><h3 style="margin:0 0 4px">'+c.name+'</h3><div class="meta">'+n+' Belege · '+(c.description||'')+'</div><div class="progress"><i style="width:'+Math.min(100,n*25)+'%"></i></div></div></div>'}).join('')}
+function addNewCase(){const n=prompt('📁 Name:');if(!n)return;appData.cases.push({id:appData.nextCaseId++,name:n,description:'',icon:'📁',createdAt:new Date().toISOString()});saveData();renderCases();showToast('✅ Angelegt')}
+
+// ========== BUDGET ==========
+function renderBudget(){const ms=String(currentMonth+1).padStart(2,'0'),ys=String(currentYear);const f=appData.docs.filter(d=>{if(!d.date)return false;const p=d.date.split('.');if(p.length!==3)return false;return p[1]===ms&&p[2]===ys});const mn=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];document.getElementById('budgetMonth').textContent=mn[currentMonth]+' '+currentYear;const tot=f.reduce((s,d)=>{const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));return s+(isNaN(a)?0:a)},0);document.getElementById('budgetTotal').textContent=tot.toFixed(2)+' €';const cats={};f.forEach(d=>{const t=d.tags||[];const c=t.find(x=>['Lebensmittel','Auto','Strom','Internet','Versicherung','Handy','Haushalt','Wohnen','Freizeit','Rechnung'].includes(x))||'Sonstiges';const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));if(!isNaN(a))cats[c]=(cats[c]||0)+a});const list=document.getElementById('budgetCategories');const e=Object.entries(cats).sort((a,b)=>b[1]-a[1]);if(e.length===0){list.innerHTML='<div class="panel"><p class="hint" style="text-align:center">💰 Keine Ausgaben.</p></div>';return}list.innerHTML=e.map(([c,s])=>{const p=tot>0?(s/tot*100).toFixed(0):0;return'<div class="doc-card"><div class="file-icon">📊</div><div><h3>'+c+'</h3><div class="meta">'+s.toFixed(2)+' €</div></div><div class="amount">'+p+'%</div></div>'}).join('');document.getElementById('budgetBar').style.width=Math.min(100,(tot/2000)*100)+'%'}
+function changeMonth(d){currentMonth+=d;if(currentMonth>11){currentMonth=0;currentYear++}else if(currentMonth<0){currentMonth=11;currentYear--}renderBudget()}
+
+// ========== CATEGORIES ==========
+function showCategories(){const m=document.getElementById('docModal'),t=document.getElementById('modalTitle'),b=document.getElementById('modalBody');t.textContent='🏷️ Kategorien';const cats={};appData.docs.forEach(d=>{(d.tags||[]).forEach(x=>{if(['Lebensmittel','Auto','Strom','Internet','Versicherung','Handy','Haushalt','Wohnen','Freizeit','Rechnung','Vertrag','Garantie'].includes(x)){if(!cats[x])cats[x]={count:0,amount:0};cats[x].count++;const a=parseFloat((d.amount||'').replace(',','.').replace(/[^0-9.]/g,''));if(!isNaN(a))cats[x].amount+=a}})});const e=Object.entries(cats).sort((a,b)=>b[1].amount-a[1].amount);if(e.length===0){b.innerHTML='<div class="big-icon">🏷️</div><div class="file-name">Keine Kategorien</div><button class="secondary-btn" onclick="closeModal()">Schließen</button>';m.classList.add('open');return}b.innerHTML='<div class="category-list" style="width:100%">'+e.map(([c,d])=>'<div class="category-item" onclick="switchScreenWithFilter(\'search\',\''+c+'\');closeModal()"><div><div class="cat-name">'+c+'</div><div class="cat-count">'+d.count+' Belege</div></div><div class="cat-amount">'+(d.amount>0?d.amount.toFixed(2)+' €':'—')+'</div></div>').join('')+'</div><button class="secondary-btn" onclick="closeModal()" style="margin-top:16px">Schließen</button>';m.classList.add('open')}
+function showOpenDocuments(){switchScreenWithFilter('search','offen')}
+
+// ========== DOC OPEN ==========
+function openDocument(id){
+  const doc=appData.docs.find(d=>d.id===id);if(!doc){showToast('⚠️ Nicht gefunden');return}
+  const m=document.getElementById('docModal'),t=document.getElementById('modalTitle'),b=document.getElementById('modalBody');
+  t.textContent=doc.emailSubject||doc.name;
+  if(!doc.fileName){b.innerHTML='<div class="big-icon">📄</div><div class="file-name">Keine Datei</div><button class="secondary-btn" onclick="closeModal()">Schließen</button>';m.classList.add('open');return}
+  const isOpen=doc.status==='offen',isEmail=doc.type==='E-Mail'||(doc.tags&&doc.tags.includes('E-Mail')),hasFt=doc.fulltext&&doc.fulltext.length>10;
+  let ep='';if(isEmail&&doc.emailBody)ep='<div class="email-meta">'+(doc.emailFrom?'<div><strong>Von:</strong> '+doc.emailFrom+'</div>':'')+(doc.emailDate?'<div><strong>Datum:</strong> '+doc.emailDate+'</div>':'')+(doc.emailSubject?'<div><strong>Betreff:</strong> '+doc.emailSubject+'</div>':'')+'</div><div class="email-preview">'+doc.emailBody.substring(0,2000)+'</div>';
+  const ft=hasFt?'<div style="font-size:11px;color:var(--muted);margin:8px 0">📝 '+doc.fulltext.length+' Zeichen indiziert</div>':'';
+  b.innerHTML='<div class="big-icon">'+(isEmail?'✉️':'📂')+'</div><div class="file-name">'+(doc.emailSubject||doc.fileName)+'</div><div class="file-info">'+(doc.type||'Dokument')+' · '+(doc.date||'')+' · '+(doc.amount||'')+(doc.company?' · '+doc.company:'')+'<br>Status: '+(isOpen?'⏳ zu prüfen':'✅ geprüft')+'</div>'+ft+ep+'<div class="status-toggle"><button class="'+(isOpen?'offen-btn active':'')+'" onclick="toggleStatus('+doc.id+',\'offen\')">⏳ Zu prüfen</button><button class="'+(!isOpen?'active':'')+'" onclick="toggleStatus('+doc.id+',\'erledigt\')">✅ Geprüft</button></div><button class="download-btn" onclick="downloadDocument('+doc.id+')">⬇️ Datei öffnen</button><button class="secondary-btn" onclick="closeModal()">Schließen</button>';
+  m.classList.add('open');
+}
+function toggleStatus(id,s){const d=appData.docs.find(x=>x.id===id);if(!d)return;d.status=s;saveData();showToast(s==='offen'?'⏳ Zu prüfen':'✅ Geprüft');openDocument(id)}
+function downloadDocument(id){const doc=appData.docs.find(d=>d.id===id);if(!doc)return;const i=document.createElement('input');i.type='file';i.accept=doc.fileType||'*/*';i.style.display='none';i.onchange=function(){if(this.files&&this.files.length>0){const f=this.files[0];const u=URL.createObjectURL(f);const a=document.createElement('a');a.href=u;a.download=doc.fileName||f.name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(u),5000);showToast('📂 '+f.name);closeModal()}this.remove()};showToast('📂 Wähle Datei');i.click()}
+function closeModal(){document.getElementById('docModal').classList.remove('open');document.getElementById('modalBody').innerHTML='<div class="big-icon">📄</div><div class="file-name">Lade...</div>'}
+document.getElementById('docModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+
+// ========== REINDEX ==========
+async function reindexPDFs(){const pdfs=appData.docs.filter(d=>d.type==='PDF'&&(!d.fulltext||d.fulltext.length<10));if(pdfs.length===0){showToast('✅ Alle PDFs indiziert!');return}showToast('⏳ '+pdfs.length+' PDFs...');let c=0;for(const doc of pdfs){try{if(!doc.fileName)continue;const i=document.createElement('input');i.type='file';i.accept='.pdf';i.style.display='none';const r=await new Promise(res=>{i.onchange=function(){res(this.files&&this.files.length>0?this.files[0]:null);this.remove()};showToast('📂 '+doc.fileName);i.click()});if(!r)continue;const b=await readFileAsBase64(r);const t=await extractTextFromPDF(b);if(t&&t.length>10){doc.fulltext=t;c++}saveData()}catch(e){}}updateUI();updateAllCharts();showToast('✅ '+c+' indiziert!')}
+
+// ========== NAV ==========
+function switchScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.target===id));document.getElementById('mainContent').scrollTop=0;if(id==='search')performSearch();if(id==='cases')renderCases();if(id==='more')renderBudget();if(id==='dashboard')updateAllCharts();updateStats()}
+function switchMoreTab(tab){document.querySelectorAll('.tab').forEach((b,i)=>{const s=(tab==='settings'&&i===0)||(tab==='budget'&&i===1);b.classList.toggle('active',s)});document.getElementById('settingsTab').style.display=tab==='settings'?'block':'none';document.getElementById('budgetTab').style.display=tab==='budget'?'block':'none';if(tab==='budget')renderBudget()}
+
+// ========== BACKUP ==========
+function exportBackup(){const d=JSON.stringify(appData,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='archiv_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);showToast('💾 Exportiert!')}
+
+// ========== TOAST ==========
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),3500)}
+
+// ========== CLOCK ==========
+function updateClock(){const n=new Date();document.getElementById('clockDisplay').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')}
+setInterval(updateClock,30000);updateClock();
+
+// ========== UI ==========
+function updateUI(){updateStats();renderRecent();if(document.getElementById('search').classList.contains('active'))performSearch();if(document.getElementById('cases').classList.contains('active'))renderCases();if(document.getElementById('more').classList.contains('active'))renderBudget();updateAllCharts();updateCloudUI()}
+
+// ========== INIT ==========
+function initApp(){
+  loadData();loadDarkMode();loadCloudConfig();
+  if(appData.docs.length===0){
+    appData.docs=[
+      {id:1,name:'Amazon Rechnung Smartphone',type:'PDF',icon:'📄',tags:['Rechnung','Amazon','Handy'],amount:'129,99 €',date:'12.08.2026',company:'Amazon',status:'offen',caseName:'Handy',caseId:1,fileName:'',fulltext:'',createdAt:new Date(Date.now()-86400000*2).toISOString()},
+      {id:2,name:'Foto Typenschild',type:'Bild',icon:'🖼️',tags:['Bild','Garantie'],amount:'',date:'10.08.2026',company:'Miele',status:'offen',caseName:'Waschmaschine',caseId:2,fileName:'',fulltext:'',createdAt:new Date(Date.now()-86400000*3).toISOString()},
+      {id:3,name:'Versicherung',type:'E-Mail',icon:'✉️',tags:['E-Mail','Versicherung'],amount:'84,30 €',date:'04.08.2026',company:'Allianz',status:'offen',caseName:'Auto',caseId:3,fileName:'',fulltext:'',createdAt:new Date(Date.now()-86400000*5).toISOString()}
+    ];
+    appData.nextDocId=4;
+    appData.cases=[
+      {id:1,name:'Handy',description:'Rechnung',icon:'📱'},
+      {id:2,name:'Waschmaschine',description:'Garantie',icon:'🧺'},
+      {id:3,name:'Auto',description:'Versicherung',icon:'🚗'}
+    ];
+    appData.nextCaseId=4;
+    saveData();
+  }
+  updateUI();updateAllCharts();updateCloudUI();
+  console.log('📁 Archiv App mit Multi-Cloud-Sync geladen!');
+}
+
+// ========== START ==========
+loadDarkMode();
+if(isPinSet()){showPinOverlay('unlock')}else{showPinOverlay('setup')}
+</script>
+</body>
+</html>
