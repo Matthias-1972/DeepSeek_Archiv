@@ -186,7 +186,7 @@ body.dark .ocr-progress{background:#2d3748}
 .install-banner .install-close{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;opacity:.6}
 .ocr-preview{display:none;margin-top:12px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
 .ocr-preview.show{display:block}
-.ocr-preview .raw-text{font-size:10px;color:var(--muted);max-height:100px;overflow:auto;white-space:pre-wrap;text-align:left;font-family:monospace;padding:8px;background:var(--bg);border-radius:8px}
+.ocr-preview .raw-text{font-size:10px;color:var(--muted);max-height:150px;overflow:auto;white-space:pre-wrap;text-align:left;font-family:monospace;padding:8px;background:var(--bg);border-radius:8px}
 .ocr-preview .preview-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
 .ocr-quality{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;margin-left:6px}
 .ocr-quality.good{background:var(--green2);color:#14764d}
@@ -219,7 +219,7 @@ body.dark .ocr-progress{background:#2d3748}
       <div><h1>Mein Archiv</h1><p class="subtitle" id="docCount">0 Dokumente</p></div>
       <button class="dark-toggle" onclick="toggleDarkMode()"><span id="darkIcon">🌙</span> <span id="darkLabel">Dark</span></button>
     </div>
-    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.2</div>
+    <div class="sync-pill">🛡️ lokal gesichert · 🎯 OCR v2.3</div>
   </header>
 
   <main id="mainContent">
@@ -264,7 +264,7 @@ body.dark .ocr-progress{background:#2d3748}
     <section id="upload" class="screen">
       <div class="panel">
         <h2>Was möchtest du hinzufügen?</h2>
-        <p class="hint">📷 Foto oder PDF → OCR v2.2 erkennt Betrag, Datum & Firma.<br>✨ Neu: Bessere Firmenerkennung auch ohne GmbH/AG.</p>
+        <p class="hint">📷 Foto oder PDF → OCR v2.3 erkennt Betrag, Datum & Firma.<br>✨ Bessere PDF-Extraktion + Firmenerkennung.</p>
         <div class="upload-grid">
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">📷</div><strong>Foto aufnehmen</strong><span>OCR v2</span></button>
           <button class="upload-tile" onclick="triggerUpload('image/*')"><div class="ico">🖼️</div><strong>Bild wählen</strong><span>OCR v2</span></button>
@@ -283,7 +283,7 @@ body.dark .ocr-progress{background:#2d3748}
         <div class="edit-field"><label>Tags</label><b id="aTags">—</b></div>
         <div class="edit-field" id="fulltextInfo" style="display:none;border-bottom:0;"><label>📝 Volltext</label><b id="aFulltext" style="font-weight:400;font-size:11px;color:var(--muted);">indiziert</b></div>
         <div class="ocr-preview" id="ocrPreview">
-          <div class="preview-label">🔍 OCR-Rohtext (geprüft)</div>
+          <div class="preview-label">🔍 OCR-Rohtext</div>
           <div class="raw-text" id="ocrRawText"></div>
         </div>
         <div class="btn-row">
@@ -343,8 +343,8 @@ body.dark .ocr-progress{background:#2d3748}
       </div>
       <div id="settingsTab" class="more-tab">
         <div class="panel" style="border-color:var(--green);background:linear-gradient(135deg,rgba(31,157,104,.08),transparent)">
-          <h3>🎯 OCR v2.2 - Fix</h3>
-          <p class="hint">✅ Firmenerkennung funktioniert jetzt auch wenn PDF.js alles in EINER Zeile ausgibt<br>✅ "Von ..." wird auch mitten im Text gefunden<br>✅ Stopp-Wörter (Steuer, IBAN, etc.) begrenzen den Namen</p>
+          <h3>🎯 OCR v2.3 - Fix</h3>
+          <p class="hint">✅ PDF-Extraktion zurück zur funktionierenden Version<br>✅ Firmenerkennung mit Stopp-Wörtern<br>✅ "Von ..." funktioniert auch in einer Zeile</p>
         </div>
         <div class="more-grid">
           <div class="more-card" onclick="toggleDarkMode()"><div class="ico" id="darkCardIcon">🌙</div><strong id="darkCardLabel">Dark Mode</strong><span class="hint">Zum Umschalten</span></div>
@@ -356,7 +356,7 @@ body.dark .ocr-progress{background:#2d3748}
           <div class="more-card" onclick="exportBackup()"><div class="ico">💾</div><strong>Lokales Backup</strong><span class="hint">JSON-Export</span></div>
           <div class="more-card" onclick="resetPin()" style="border-color:#dc2626"><div class="ico">🔄</div><strong>PIN zurücksetzen</strong><span class="hint">Bei vergessen</span></div>
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.2 · OCR v2.2</span></div>
+        <div style="margin-top:14px;padding:12px;background:var(--chip);border-radius:18px;text-align:center;"><span class="hint">📦 Version 10.3 · OCR v2.3</span></div>
       </div>
       <div id="budgetTab" class="more-tab" style="display:none">
         <div class="budget">
@@ -538,7 +538,8 @@ async function handleFile(file){
       date=extractDate(text)||date;
       amount=extractAmount(text)||amount;
       tags.push(...detectTags(text));
-      preview.classList.remove('show');
+      preview.classList.add('show');
+      document.getElementById('ocrRawText').textContent=text.substring(0,1500);
     }
     else if(dt==='Bild'&&!emailData){
       p.style.width='25%';s.innerHTML='<span class="spinner"></span> Bild vorbereiten...';
@@ -607,6 +608,7 @@ async function performOCR(b64){
   }catch(e){return''}
 }
 
+// ========== PDF-EXTRAKTION (ZURÜCK ZUR FUNKTIONIERENDEN VERSION) ==========
 async function extractTextFromPDF(b64){
   try{
     const l=window.pdfjsLib;if(!l)return'';
@@ -617,23 +619,15 @@ async function extractTextFromPDF(b64){
     const pdf=await l.getDocument({data:bytes}).promise;
     let t='';
     for(let i=1;i<=pdf.numPages;i++){
-      const pg=await l.getPage(i);
+      const pg=await pdf.getPage(i);
       const c=await pg.getTextContent();
-      // WICHTIG: Jede Zeile einzeln (nicht alles in einer Zeile)
-      let lastY=null,lineText='';
-      c.items.forEach(item=>{
-        const y=item.transform[5];
-        if(lastY!==null&&Math.abs(y-lastY)>3){t+=lineText.trim()+'\n';lineText=''}
-        lineText+=(item.str||'')+' ';
-        lastY=y;
-      });
-      if(lineText)t+=lineText.trim()+'\n';
+      t+=c.items.map(x=>x.str).join(' ')+'\n';
     }
     return t;
   }catch(e){return''}
 }
 
-// ========== FIRMENERKENNUNG v2.2 (FIX) ==========
+// ========== FIRMENERKENNUNG v2.3 (funktioniert auch in einer Zeile) ==========
 function extractCompany(t){
   if(!t)return'';
   
@@ -641,8 +635,7 @@ function extractCompany(t){
   const companies=['Amazon','Google','Apple','Samsung','Vodafone','Telekom','Stadtwerke','Allianz','AXA','HUK','Sparkasse','Volksbank','Rewe','Aldi','Lidl','MediaMarkt','Saturn','IKEA','Zalando','Otto','eBay','PayPal','Netflix','Spotify','Microsoft','Adobe','DHL','Hermes','UPS','FedEx','Deutsche Bahn','Lufthansa','Netto','Penny','Kaufland','Edeka','Rossmann','Tchibo','Deichmann'];
   for(const c of companies)if(t.toLowerCase().includes(c.toLowerCase()))return c;
   
-  // 2. "Von X" - FUNKTIONIERT AUCH IN EINER ZEILE
-  // Stopp-Wörter die das Ende markieren
+  // 2. "Von X" - funktioniert auch in einer Zeile, dank Stopp-Wörtern
   const stopper='(?:Steuer|IBAN|BIC|USt\\.|MwSt|Telefon|Tel\\.|E-Mail|@|Seite|Rechnung\\s|Datum|Kunden|Bestell|Betreff|Deutschland|Österreich|Schweiz|Herrn|Frau)';
   const patterns=[
     new RegExp('(?:^|[\\s,;])(?:Von|Absender|Rechnungssteller|Aussteller|Anbieter|Verkäufer|Lieferant)[\\s:]+([A-ZÄÖÜ][^]{2,120}?)\\s+(?='+stopper+')','i'),
@@ -661,7 +654,7 @@ function extractCompany(t){
     }
   }
   
-  // 3. Rechtsformen
+  // 3. Rechtsformen (GmbH, AG, KG, ...)
   const rf=t.match(/([A-ZÄÖÜ][A-Za-zäöüßÄÖÜ\.\-']*(?:\s+[A-ZÄÖÜa-zäöüß0-9\.\-&']+){0,4})\s+(GmbH|AG|KG|OHG|UG|mbH|e\.K\.|eG|GbR|Co\.|& Co|KGaA|SE)/);
   if(rf){
     let name=(rf[1]+' '+rf[2]).trim();
@@ -870,7 +863,7 @@ function initApp(){
     saveData();
   }
   updateUI();updateAllCharts();
-  console.log('📁 Archiv App mit OCR v2.2 geladen!');
+  console.log('📁 Archiv App mit OCR v2.3 geladen!');
 }
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>console.log('✅ SW aktiv')).catch(e=>console.warn('SW:',e))}
